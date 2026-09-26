@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>stand · die vierzehn zustände und die leere · iki1uc · kader</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#05070e;color:#8aa8a0;
+            font-family:'Consolas','Courier New',monospace;overflow:hidden}
+
+  canvas{display:block;position:fixed;inset:0}
+
+  /* ─── MENÜ · 14 ZUSTÄNDE ─────────────────────── */
+  #modes{position:fixed;top:14px;left:14px;right:14px;z-index:10;
+         display:flex;flex-wrap:wrap;gap:3px}
+  #modes button{background:transparent;border:1px solid #1a2a3a;color:#3a5a4a;
+                font-family:inherit;font-size:8.5px;letter-spacing:1.6px;
+                padding:5px 9px;cursor:pointer;transition:all .3s;
+                white-space:nowrap}
+  #modes button:hover{color:#8cf0d0;border-color:#2a4a3a}
+  #modes button.on{color:#f0d080;border-color:#f0d080;
+                   box-shadow:0 0 10px rgba(240,208,128,.22)}
+
+  /* ─── DAS WORT · MITTE ───────────────────────── */
+  #say{position:fixed;bottom:50%;left:50%;transform:translate(-50%,-50%);
+       font-size:clamp(22px,4.5vw,54px);font-weight:100;letter-spacing:.14em;
+       pointer-events:none;z-index:5;transition:all .6s ease;
+       white-space:nowrap;text-align:center}
+  #say small{display:block;font-size:.28em;letter-spacing:.4em;
+             margin-top:14px;opacity:.5;font-weight:400}
+
+  /* ─── REGISTRY · RECHTE SEITE ────────────────── */
+  #reg{position:fixed;top:80px;right:18px;font-size:9px;letter-spacing:1.5px;
+       color:#3a5a4a;z-index:10;pointer-events:none;line-height:1.7;
+       max-width:220px;text-align:right;display:none}
+  #reg.on{display:block}
+  #reg .e{color:#f0d080;display:block;animation:in .5s ease}
+  @keyframes in{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+
+  /* ─── TELEMETRIE · RECHTS UNTEN ──────────────── */
+  #tlm{position:fixed;bottom:44px;right:18px;font-size:9px;letter-spacing:1.5px;
+       color:#3a5a4a;z-index:10;pointer-events:none;text-align:right;line-height:1.8;
+       display:none}
+  #tlm.on{display:block}
+  #tlm .v{color:#8cf0d0}
+
+  /* ─── SIGNATUR · LINKS UNTEN ─────────────────── */
+  #sig{position:fixed;bottom:44px;left:18px;font-size:9px;letter-spacing:2.5px;
+       color:#2a4a3a;z-index:10;pointer-events:none;line-height:1.9}
+  #sig b{color:#8cf0d0}
+  #sig .no{color:#3a2a2a}
+
+  /* ─── HINWEIS · RECHTS OBEN ──────────────────── */
+  #hint{position:fixed;top:80px;left:18px;font-size:8.5px;letter-spacing:2px;
+        color:#2a4a3a;z-index:10;pointer-events:none;line-height:1.9}
+
+  /* ─── DER LAUF · PUNKTE UNTEN ────────────────── */
+  #lauf{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+        font-family:'Consolas',monospace;font-size:9px;
+        letter-spacing:6px;color:rgba(58,90,74,.5);
+        z-index:10;pointer-events:none;text-align:center;
+        display:flex;gap:8px}
+  #lauf .p{transition:all .8s ease;opacity:.2}
+  #lauf .p.besucht{opacity:.65;color:#3a5a4a}
+  #lauf .p.jetzt{opacity:1;color:#f0d080;
+                 text-shadow:0 0 8px rgba(240,208,128,.5)}
+  #lauf .p.leer{color:#b388ff;opacity:.8}
+
+  /* ─── GEMEINSAME ZEICHEN · Ecken + Atem + Kante ─ */
+  .kader-atem{position:fixed;bottom:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,
+      rgba(140,240,208,.22) 50%,transparent);
+    animation:kader-atem 8s ease-in-out infinite;
+    pointer-events:none;z-index:999}
+  @keyframes kader-atem{0%,100%{opacity:.35}50%{opacity:.9}}
+  .kader-ecke{position:fixed;width:14px;height:14px;
+    z-index:996;pointer-events:none;opacity:.28;border-color:#8cf0d0}
+  .kader-ecke.ol{top:12px;left:12px;border-top:1px solid;border-left:1px solid}
+  .kader-ecke.or{top:12px;right:12px;border-top:1px solid;border-right:1px solid}
+  .kader-ecke.ul{bottom:12px;left:12px;border-bottom:1px solid;border-left:1px solid}
+  .kader-ecke.ur{bottom:12px;right:12px;border-bottom:1px solid;border-right:1px solid}
+  .kader-kante{position:fixed;bottom:6px;left:50%;transform:translateX(-50%);
+    width:60px;height:1px;background:rgba(140,240,208,.25);
+    pointer-events:none;z-index:997}
+  .kader-kante::before,.kader-kante::after{content:'';position:absolute;top:50%;
+    width:3px;height:3px;border-radius:50%;background:rgba(140,240,208,.5);
+    transform:translateY(-50%)}
+  .kader-kante::before{left:-7px}
+  .kader-kante::after{right:-7px}
+
+  /* ─── ZURÜCK · ZUM EINGANG ───────────────────── */
+  #zurueck{position:fixed;top:14px;right:18px;z-index:10}
+  #zurueck a{color:#3a5a4a;text-decoration:none;font-size:9px;letter-spacing:3px;
+             padding:5px 12px;border:1px solid #1a2a3a;transition:all .4s}
+  #zurueck a:hover{color:#8cf0d0;border-color:#3a5a4a}
+
+  @media(max-width:640px){
+    #modes{top:10px;gap:2px}
+    #modes button{font-size:7.5px;letter-spacing:1.2px;padding:4px 6px}
+    #reg{top:70px;right:8px;max-width:160px;font-size:8px}
+    #hint{display:none}
+    #lauf{bottom:38px;gap:5px}
+    #lauf .p{font-size:8px}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="cv"></canvas>
+<div id="modes"></div>
+<div id="say"></div>
+<div id="reg"></div>
+<div id="hint">klick · zustand wechseln<br>esc · in die leere<br>← → · durch den lauf</div>
+<div id="tlm">
+  <div>stand der dinge · <span class="v" id="tStand">–</span></div>
+  <div>umstand · <span class="v" id="tUm">–</span></div>
+  <div>linear · <span class="v" id="tLin">–</span></div>
+  <div>unlinear · <span class="v" id="tUn">–</span></div>
+  <div>beitrag · <span class="v" id="tBei">–</span></div>
+  <div>nicht · <span class="v" id="tNo">–</span></div>
+  <div>spuren · <span class="v" id="tSpur">0</span></div>
+</div>
+<div id="sig">
+  stand · <b>14</b> zustände + leere<br>
+  ein stehender · viele weisen<br>
+  <span class="no">leere ist grund · nicht nichts</span>
+</div>
+<div id="lauf"></div>
+<div id="zurueck"><a href="index.html">← eingang</a></div>
+
+<div class="kader-ecke ol"></div>
+<div class="kader-ecke or"></div>
+<div class="kader-ecke ul"></div>
+<div class="kader-ecke ur"></div>
+<div class="kader-atem"></div>
+<div class="kader-kante"></div>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ─────────────────────────────────────────────────────────
+   STAND · DIE VIERZEHN ZUSTÄNDE UND DIE LEERE
+   ─────────────────────────────────────────────────────────
+   Der Stehende. Um ihn die Zustände.
+   Jeder Zustand eine andere Weise, zu stehen.
+   Und die Leere als fünfzehnter — der Grund.
+───────────────────────────────────────────────────────────*/
+
+const MODES = [
+  { id:'stand',         n:'STAND',              sub:'stehen · basis' },
+  { id:'umstand',       n:'UMSTAND',            sub:'was drumherum steht' },
+  { id:'standesamt',    n:'STANDESAMT',         sub:'bindet · registriert' },
+  { id:'standDerDinge', n:'STAND DER DINGE',    sub:'was gerade ist' },
+  { id:'liegestand',    n:'LIEGESTAND',         sub:'geparkt · ruht' },
+  { id:'standesgemaess',n:'STANDESGEMÄSS',      sub:'wie es sich gehört' },
+  { id:'linear',        n:'LINEAR',             sub:'gerade · vorhersagbar' },
+  { id:'unlinear',      n:'UNLINEAR',           sub:'krumm · überraschend' },
+  { id:'universell',    n:'UNIVERSELL',         sub:'alles zugleich' },
+  { id:'makingOf',      n:'MAKING-OF',          sub:'wie es gemacht wurde' },
+  { id:'duMiaDochNet',  n:'DU MIA DOCH NET',    sub:'widerstand · nein' },
+  { id:'jaMann',        n:'JA MANN',            sub:'zustimmung · ja' },
+  { id:'lassMiaRuh',    n:'LASS MIA DOCH AUCH RUH', sub:'rückzug · leer' },
+  { id:'funktionAller', n:'FUNKTION ALLER',     sub:'beitrag + nichtbeitrag' },
+];
+
+const LAUF = MODES.map(m => m.id);
+
+/* ─── SCENE ────────────────────────────────────────────────*/
+const canvas = document.getElementById('cv');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070e);
+scene.fog = new THREE.Fog(0x05070e, 12, 30);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, .1, 100);
+camera.position.set(4.5, 3.2, 7);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = .06;
+controls.autoRotate = true;
+controls.autoRotateSpeed = .22;
+controls.target.set(0, .5, 0);
+controls.minDistance = 3;
+controls.maxDistance = 18;
+
+scene.add(new THREE.AmbientLight(0x223344, 1.2));
+const dl = new THREE.DirectionalLight(0xf0e0c0, 1.6);
+dl.position.set(5, 9, 6); scene.add(dl);
+const dl2 = new THREE.DirectionalLight(0x88ddff, .5);
+dl2.position.set(-5, -3, -5); scene.add(dl2);
+
+/* ─── DER STEHENDE ─────────────────────────────────────────*/
+const standGroup = new THREE.Group();
+scene.add(standGroup);
+
+const boxGeo = new THREE.BoxGeometry(.5, 2.4, .5);
+const boxMat = new THREE.MeshStandardMaterial({
+  color:0x44aa77, emissive:0x44aa77, emissiveIntensity:.35,
+  roughness:.35, metalness:.75
+});
+const box = new THREE.Mesh(boxGeo, boxMat);
+box.position.y = .7;
+standGroup.add(box);
+
+const boxEdges = new THREE.LineSegments(
+  new THREE.EdgesGeometry(boxGeo),
+  new THREE.LineBasicMaterial({color:0x88ddbb, transparent:true, opacity:.5})
+);
+boxEdges.position.copy(box.position);
+standGroup.add(boxEdges);
+
+const baseRing = new THREE.Mesh(
+  new THREE.RingGeometry(.55, .85, 72),
+  new THREE.MeshBasicMaterial({color:0x44aa77, transparent:true,
+    opacity:.35, side:THREE.DoubleSide})
+);
+baseRing.rotation.x = -Math.PI/2;
+baseRing.position.y = -.5;
+standGroup.add(baseRing);
+
+/* ─── UMSTAND · DREI RINGE ─────────────────────────────────*/
+const rings = [];
+for(let i=0;i<3;i++){
+  const r = .9 + i*.42;
+  const g = new THREE.TorusGeometry(r, .008, 6, 96);
+  const m = new THREE.MeshBasicMaterial({color:0x88ddff,
+    transparent:true, opacity:0});
+  const t = new THREE.Mesh(g, m);
+  t.rotation.x = Math.PI/2;
+  t.position.y = .25 + i*.22;
+  scene.add(t);
+  rings.push({mesh:t, speed:.0015*(i+1), base:t.position.y, phase:i*1.4});
+}
+
+/* ─── STANDESAMT · REGISTRY ────────────────────────────────*/
+const regGroup = new THREE.Group();
+scene.add(regGroup);
+const registered = [];
+
+/* ─── LINEAR · STRAHL ──────────────────────────────────────*/
+const beamGeo = new THREE.BufferGeometry().setFromPoints([
+  new THREE.Vector3(0, -1.2, 0),
+  new THREE.Vector3(0,  2.2, 0)
+]);
+const beamMat = new THREE.LineBasicMaterial({color:0xf0d080,
+  transparent:true, opacity:0});
+const beam = new THREE.Line(beamGeo, beamMat);
+scene.add(beam);
+
+/* ─── UNLINEAR · WELLE ─────────────────────────────────────*/
+const wavePts = [];
+for(let i=0;i<=120;i++){
+  const u = i/120;
+  const y = -1.2 + u*3.4;
+  wavePts.push(new THREE.Vector3(
+    Math.sin(u*Math.PI*6)*.5, y, Math.cos(u*Math.PI*4)*.3));
+}
+const waveGeo = new THREE.BufferGeometry().setFromPoints(wavePts);
+const waveMat = new THREE.LineBasicMaterial({color:0xb388ff,
+  transparent:true, opacity:0});
+const wave = new THREE.Line(waveGeo, waveMat);
+scene.add(wave);
+
+/* ─── MAKING-OF · BAUSPUREN ────────────────────────────────*/
+const makeGroup = new THREE.Group();
+scene.add(makeGroup);
+makeGroup.visible = false;
+
+const axG = new THREE.BufferGeometry().setFromPoints([
+  new THREE.Vector3(-2,0,0), new THREE.Vector3(2,0,0),
+  new THREE.Vector3(0,-1.5,0), new THREE.Vector3(0,2.5,0),
+  new THREE.Vector3(0,0,-2), new THREE.Vector3(0,0,2),
+]);
+const axL = new THREE.LineSegments(axG, new THREE.LineBasicMaterial({
+  color:0x3a5a4a, transparent:true, opacity:.5
+}));
+makeGroup.add(axL);
+
+const wire = new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.BoxGeometry(1.2, 3, 1.2)),
+  new THREE.LineBasicMaterial({color:0x8cf0d0, transparent:true, opacity:.28})
+);
+wire.position.y = .6;
+makeGroup.add(wire);
+
+/* ─── FUNKTION ALLER · 14×14 GITTER ────────────────────────*/
+const F = 14;
+const fCount = F*F;
+const fPos = new Float32Array(fCount*3);
+const fCol = new Float32Array(fCount*3);
+const fState = [];
+for(let i=0;i<F;i++)for(let j=0;j<F;j++){
+  const k = i*F + j;
+  const x = (i/(F-1)-.5)*4;
+  const z = (j/(F-1)-.5)*4;
+  fPos[k*3]=x; fPos[k*3+1]=0; fPos[k*3+2]=z;
+  fCol[k*3]=.2; fCol[k*3+1]=.4; fCol[k*3+2]=.5;
+  fState.push({
+    base:[x, z],
+    beitrag: Math.random() > .35,
+    phase: Math.random()*Math.PI*2,
+  });
+}
+const fGeo = new THREE.BufferGeometry();
+fGeo.setAttribute('position', new THREE.BufferAttribute(fPos, 3));
+fGeo.setAttribute('color', new THREE.BufferAttribute(fCol, 3));
+const fMat = new THREE.PointsMaterial({
+  size:.1, vertexColors:true, transparent:true, opacity:0,
+  blending:THREE.AdditiveBlending, depthWrite:false, sizeAttenuation:true
+});
+const fPoints = new THREE.Points(fGeo, fMat);
+scene.add(fPoints);
+
+/* ─── GEISTER · SPUREN VERLASSENER ZUSTÄNDE ────────────────
+   Wenn man einen Zustand verlässt, hinterlässt er einen
+   blassen Wireframe. Er sinkt langsam. Er wird Grund.
+───────────────────────────────────────────────────────────*/
+const spuren = [];
+
+function spurHinterlassen(id, farbe){
+  const geo = new THREE.BoxGeometry(.5, 2.4, .5);
+  const mat = new THREE.MeshBasicMaterial({
+    color: farbe || 0x44aa77,
+    transparent:true, opacity:.14, wireframe:true
+  });
+  const ghost = new THREE.Mesh(geo, mat);
+  ghost.position.copy(standGroup.position);
+  ghost.position.y = .7;
+  ghost.rotation.copy(standGroup.rotation);
+  ghost.userData = { id, lebenszeit: 1.0 };
+  scene.add(ghost);
+  spuren.push(ghost);
+  if(spuren.length > 20){
+    const alt = spuren.shift();
+    scene.remove(alt);
+    alt.geometry.dispose();
+    alt.material.dispose();
+  }
+}
+
+/* ─── DER LAUF · WIE WEIT MAN GEGANGEN IST ─────────────────*/
+const laufEl = document.getElementById('lauf');
+const besuchte = new Set();
+
+function baueLauf(){
+  laufEl.innerHTML = '';
+  LAUF.forEach((id, i) => {
+    const p = document.createElement('span');
+    p.className = 'p';
+    p.dataset.id = id;
+    p.textContent = '·';
+    laufEl.appendChild(p);
+    if(i < LAUF.length - 1){
+      const t = document.createElement('span');
+      t.className = 'p trenner';
+      t.textContent = ' ';
+      t.style.opacity = '.1';
+      laufEl.appendChild(t);
+    }
+  });
+  // Das Leere-Element
+  const leerP = document.createElement('span');
+  leerP.className = 'p leer';
+  leerP.dataset.id = '__leer__';
+  leerP.textContent = '○';
+  leerP.style.marginLeft = '18px';
+  laufEl.appendChild(leerP);
+  aktualisiereLauf();
+}
+
+function aktualisiereLauf(){
+  laufEl.querySelectorAll('.p').forEach(p => {
+    p.classList.remove('besucht', 'jetzt');
+    if(p.dataset.id === '__leer__'){
+      p.classList.toggle('leer', leer);
+    } else if(p.dataset.id === currentMode && !leer){
+      p.classList.add('jetzt');
+    } else if(besuchte.has(p.dataset.id)){
+      p.classList.add('besucht');
+    }
+  });
+}
+
+/* ─── DIE LEERE · DER GRUNDZUSTAND ─────────────────────────*/
+let leer = false;
+
+function inDieLeere(){
+  leer = true;
+  // Alles blass, langsam, still
+  boxMat.color.setHex(0x0a1212);
+  boxMat.emissive.setHex(0x0a1212);
+  boxMat.emissiveIntensity = .02;
+  boxEdges.material.opacity = .08;
+  baseRing.material.opacity = .06;
+  rings.forEach(r => r.mesh.material.opacity = 0);
+  beamMat.opacity = 0;
+  waveMat.opacity = 0;
+  makeGroup.visible = false;
+  fMat.opacity = 0;
+  regEl.classList.remove('on');
+  tlmEl.classList.remove('on');
+  sayEl.innerHTML = `○<small>LEER · der grund · auf dem alles steht</small>`;
+  sayEl.style.color = '#2a3a4a';
+  modeButtons.forEach(mb => mb.btn.classList.remove('on'));
+  aktualisiereLauf();
+}
+
+function ausDerLeere(){
+  leer = false;
+  boxEdges.material.opacity = .5;
+  baseRing.material.opacity = .35;
+  setMode('stand');
+}
+
+/* ─── UI ───────────────────────────────────────────────────*/
+const modesEl = document.getElementById('modes');
+const sayEl = document.getElementById('say');
+const regEl = document.getElementById('reg');
+const tlmEl = document.getElementById('tlm');
+
+const modeButtons = MODES.map(m=>{
+  const b = document.createElement('button');
+  b.textContent = m.n;
+  b.addEventListener('click', ()=>setMode(m.id));
+  modesEl.appendChild(b);
+  return {btn:b, mode:m};
+});
+
+let currentMode = 'stand';
+const mouseNDC = new THREE.Vector2(0,0);
+
+function setMode(id){
+  // Alten Zustand als Spur hinterlassen
+  if(!leer && currentMode && currentMode !== id){
+    besuchte.add(currentMode);
+    spurHinterlassen(currentMode, farbeFuerModus(currentMode));
+  }
+
+  leer = false;
+  currentMode = id;
+  modeButtons.forEach(mb=>mb.btn.classList.toggle('on', mb.mode.id === id));
+  const m = MODES.find(x=>x.id===id);
+  sayEl.style.color = '#8aa8a0';
+
+  const is = (x)=> x === id;
+
+  // Sichtbarkeiten
+  boxEdges.material.opacity = .5;
+  baseRing.material.opacity = .35;
+  rings.forEach(r=> r.mesh.material.opacity = is('umstand') || is('universell') ? .45 : 0);
+  beamMat.opacity = is('linear') || is('universell') ? .7 : 0;
+  waveMat.opacity = is('unlinear') || is('universell') ? .6 : 0;
+  makeGroup.visible = is('makingOf') || is('universell');
+  fMat.opacity = is('funktionAller') || is('universell') ? .85 : 0;
+
+  regEl.classList.toggle('on', is('standesamt'));
+  tlmEl.classList.toggle('on', is('standDerDinge') || is('funktionAller'));
+
+  // Grundfarbe
+  const ruhig = is('lassMiaRuh');
+  boxMat.color.setHex(ruhig ? 0x1a2a2a : 0x44aa77);
+  boxMat.emissive.setHex(ruhig ? 0x0a1212 : 0x44aa77);
+  boxMat.emissiveIntensity = is('stand') ? .35
+                           : ruhig ? .04
+                           : is('duMiaDochNet') ? .5
+                           : is('jaMann') ? .9
+                           : is('standesgemaess') ? .7
+                           : is('liegestand') ? .25
+                           : .45;
+
+  // Wort
+  const greet = {
+    stand:'steht', umstand:'was drumherum steht',
+    standesamt:'klick · registriert', standDerDinge:'was gerade ist',
+    liegestand:'geparkt · ruhig', standesgemaess:'so gehört es sich',
+    linear:'gerade · vorhersagbar', unlinear:'krumm · überraschend',
+    universell:'alles zugleich', makingOf:'wie es gemacht wurde',
+    duMiaDochNet:'nicht mit mir', jaMann:'ja · ja · ja',
+    lassMiaRuh:'…', funktionAller:'beitrag + nichtbeitrag',
+  }[id];
+  sayEl.innerHTML = `${greet}<small>${m.n}</small>`;
+  sayEl.style.color = ruhig ? '#1a3a2a'
+                    : is('duMiaDochNet') ? '#b388ff'
+                    : is('jaMann') ? '#8cf0d0'
+                    : is('standesamt') ? '#f0d080'
+                    : is('liegestand') ? '#7a8a9a'
+                    : '#8aa8a0';
+
+  aktualisiereLauf();
+}
+
+function farbeFuerModus(id){
+  return {
+    stand:0x44aa77, umstand:0x88ddff, standesamt:0xf0d080,
+    standDerDinge:0x8cf0d0, liegestand:0x7a8a9a, standesgemaess:0xf0d080,
+    linear:0xf0d080, unlinear:0xb388ff, universell:0xb388ff,
+    makingOf:0x8cf0d0, duMiaDochNet:0xb388ff, jaMann:0x8cf0d0,
+    lassMiaRuh:0x2a4a3a, funktionAller:0x8cf0d0,
+  }[id] || 0x44aa77;
+}
+
+/* ─── MAUS ─────────────────────────────────────────────────*/
+canvas.addEventListener('pointermove', e=>{
+  mouseNDC.x = (e.clientX/innerWidth)*2 - 1;
+  mouseNDC.y = -(e.clientY/innerHeight)*2 + 1;
+});
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let downPos = null;
+
+canvas.addEventListener('pointerdown', e=>{ downPos = {x:e.clientX, y:e.clientY}; });
+canvas.addEventListener('pointerup', e=>{
+  if(!downPos) return;
+  const dx = e.clientX - downPos.x;
+  const dy = e.clientY - downPos.y;
+  if(dx*dx + dy*dy > 25) return;
+
+  // In der Leere: Klick bringt zurück
+  if(leer){ ausDerLeere(); return; }
+
+  pointer.x = (e.clientX/innerWidth)*2 - 1;
+  pointer.y = -(e.clientY/innerHeight)*2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObject(box);
+
+  if(currentMode === 'standesamt'){
+    const t = new Date().toLocaleTimeString('de-DE');
+    registered.push(t);
+    const e = document.createElement('span');
+    e.className = 'e';
+    e.textContent = `№ ${String(registered.length).padStart(3,'0')} · ${t}`;
+    regEl.appendChild(e);
+    if(regEl.children.length > 8) regEl.removeChild(regEl.firstChild);
+
+    const a = Math.random()*Math.PI*2;
+    const r = .9 + Math.random()*1.6;
+    const mk = new THREE.Mesh(
+      new THREE.SphereGeometry(.05, 12, 12),
+      new THREE.MeshBasicMaterial({color:0xf0d080})
+    );
+    mk.position.set(Math.cos(a)*r, -.48, Math.sin(a)*r);
+    regGroup.add(mk);
+  }
+
+  if(hits.length){
+    boxMat.emissiveIntensity = 2.4;
+  }
+});
+
+/* ─── TASTATUR ─────────────────────────────────────────────*/
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape'){ inDieLeere(); return; }
+  if(leer && e.key.length === 1 && e.key !== 'Escape'){ ausDerLeere(); return; }
+  if(e.key === 'ArrowLeft' || e.key === 'ArrowRight'){
+    const idx = LAUF.indexOf(currentMode);
+    if(idx < 0) return;
+    const next = e.key === 'ArrowRight'
+      ? (idx + 1) % LAUF.length
+      : (idx - 1 + LAUF.length) % LAUF.length;
+    setMode(LAUF[next]);
+  }
+});
+
+/* ─── LOOP ─────────────────────────────────────────────────*/
+const clock = new THREE.Clock();
+const tmp = new THREE.Vector3();
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  const is = (x)=> x === currentMode && !leer;
+
+  // Atmen
+  const breath = 1 + Math.sin(t*1.6)*.02;
+  box.scale.set(breath, 1, breath);
+  boxEdges.scale.copy(box.scale);
+
+  // Glühen abbauen
+  const targetI = leer ? .02 : (is('lassMiaRuh') ? .04 : .35);
+  if(boxMat.emissiveIntensity > targetI){
+    boxMat.emissiveIntensity = Math.max(targetI,
+      boxMat.emissiveIntensity - .04);
+  }
+
+  // Liegestand: kippt
+  if(is('liegestand')){
+    standGroup.rotation.z += (Math.PI/2 - standGroup.rotation.z)*.05;
+    standGroup.position.y += (-.5 - standGroup.position.y)*.05;
+  } else {
+    standGroup.rotation.z += (0 - standGroup.rotation.z)*.08;
+    standGroup.position.y += (0 - standGroup.position.y)*.08;
+  }
+
+  // Standesgemäß: richtet aus
+  if(is('standesgemaess')){
+    standGroup.rotation.x *= .9;
+    standGroup.rotation.y += (0 - standGroup.rotation.y)*.08;
+    standGroup.position.x *= .9;
+    standGroup.position.z *= .9;
+  }
+
+  // Universell: dreht leicht
+  if(is('universell')){
+    standGroup.rotation.y += .004;
+    standGroup.rotation.x = Math.sin(t*.4)*.15;
+  } else if(!is('standesgemaess')){
+    standGroup.rotation.x *= .96;
+  }
+
+  // Ringe (umstand)
+  rings.forEach((r,i)=>{
+    const sichtbar = is('umstand') || is('universell');
+    const zielOpacity = sichtbar
+      ? (is('umstand') ? .45 : .3) + Math.sin(t*1.2 + r.phase)*.08
+      : 0;
+    r.mesh.material.opacity += (zielOpacity - r.mesh.material.opacity)*.08;
+    r.mesh.rotation.z += r.speed * (is('lassMiaRuh') ? .2 : 1);
+    r.mesh.position.y = r.base + Math.sin(t*.6 + r.phase)*.06;
+  });
+
+  // Linear / Universell: Strahl atmet
+  if(is('linear') || is('universell')){
+    beamMat.opacity = .5 + Math.abs(Math.sin(t*.8))*.4;
+    beam.scale.y = .8 + Math.sin(t*.8)*.2;
+  } else {
+    beamMat.opacity *= .9;
+  }
+
+  // Unlinear: Welle wackelt
+  if(is('unlinear') || is('universell')){
+    const p = waveGeo.attributes.position;
+    for(let i=0;i<p.count;i++){
+      const u = i/(p.count-1);
+      p.setX(i, Math.sin(u*Math.PI*6 + t*1.5)*.5);
+      p.setZ(i, Math.cos(u*Math.PI*4 + t*1.1)*.3);
+    }
+    p.needsUpdate = true;
+  }
+
+  // Making-of: Wireframe dreht
+  if(makeGroup.visible){
+    wire.rotation.y = t*.2;
+  }
+
+  // Du mia doch net: weicht Maus aus
+  if(is('duMiaDochNet')){
+    tmp.set(mouseNDC.x, mouseNDC.y, .5).unproject(camera);
+    const dir = tmp.sub(camera.position).normalize();
+    const dist = -camera.position.y / dir.y;
+    const hit = camera.position.clone().add(dir.multiplyScalar(dist));
+    const toBox = new THREE.Vector3(0, 0, 0).sub(hit);
+    const d = toBox.length();
+    if(d < 1.8){
+      toBox.normalize().multiplyScalar((1.8 - d)*.4);
+      standGroup.position.x += toBox.x;
+      standGroup.position.z += toBox.z;
+    } else {
+      standGroup.position.x *= .92;
+      standGroup.position.z *= .92;
+    }
+  }
+  // Ja mann: folgt Maus
+  else if(is('jaMann')){
+    tmp.set(mouseNDC.x, mouseNDC.y, .5).unproject(camera);
+    const dir = tmp.sub(camera.position).normalize();
+    const dist = -camera.position.y / dir.y;
+    const hit = camera.position.clone().add(dir.multiplyScalar(dist));
+    standGroup.position.x += (hit.x - standGroup.position.x)*.04;
+    standGroup.position.z += (hit.z - standGroup.position.z)*.04;
+  }
+  // Alle anderen: zurück zur Mitte
+  else if(!is('liegestand')){
+    standGroup.position.x *= .94;
+    standGroup.position.z *= .94;
+  }
+
+  // Funktion aller: Beitrag zieht, Nichtbeitrag drückt
+  if(is('funktionAller') || is('universell')){
+    const p = fGeo.attributes.position.array;
+    const c = fGeo.attributes.color.array;
+    let nBei = 0, nNo = 0;
+    fState.forEach((st,i)=>{
+      const target = st.beitrag
+        ? [st.base[0]*.75, st.base[1]*.75]
+        : [st.base[0]*1.05, st.base[1]*1.05];
+      const now = [p[i*3], p[i*3+2]];
+      const dx = target[0] - now[0];
+      const dz = target[1] - now[1];
+      p[i*3]   += dx*.02 + Math.sin(t*1.2 + st.phase)*.004;
+      p[i*3+2] += dz*.02 + Math.cos(t*1.1 + st.phase)*.004;
+      p[i*3+1]  = Math.sin(t*.8 + st.phase)*.08;
+      if(st.beitrag){
+        nBei++;
+        c[i*3]=.6; c[i*3+1]=.9; c[i*3+2]=.8;
+      } else {
+        nNo++;
+        c[i*3]=.5; c[i*3+1]=.3; c[i*3+2]=.7;
+      }
+    });
+    fGeo.attributes.position.needsUpdate = true;
+    fGeo.attributes.color.needsUpdate = true;
+    document.getElementById('tBei').textContent = nBei;
+    document.getElementById('tNo').textContent  = nNo;
+  }
+
+  // Telemetrie (Stand der Dinge)
+  if(is('standDerDinge')){
+    document.getElementById('tStand').textContent =
+      standGroup.position.length().toFixed(2);
+    document.getElementById('tUm').textContent = rings.length;
+    document.getElementById('tLin').textContent = beamMat.opacity.toFixed(2);
+    document.getElementById('tUn').textContent = waveMat.opacity.toFixed(2);
+  }
+  document.getElementById('tSpur').textContent = spuren.length;
+
+  // Geister: sinken, verblassen
+  for(let i = spuren.length - 1; i >= 0; i--){
+    const g = spuren[i];
+    g.userData.lebenszeit -= .004;
+    g.material.opacity = Math.max(.02, g.userData.lebenszeit * .15);
+    g.position.y += (0.1 - g.position.y) * .005;
+    if(g.userData.lebenszeit <= 0){
+      scene.remove(g);
+      g.geometry.dispose();
+      g.material.dispose();
+      spuren.splice(i, 1);
+    }
+  }
+
+  // Leere: alles langsamer
+  if(leer){
+    controls.autoRotateSpeed = .05;
+    coreMat_unused(); // no-op, damit nichts kracht
+  } else {
+    controls.autoRotateSpeed = .22;
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+// kleiner Schutz, falls irgendwo coreMat referenziert wird
+function coreMat_unused(){}
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* ─── INIT ─────────────────────────────────────────────────*/
+baueLauf();
+setMode('stand');
+animate();
+</script>
+</body>
+</html>
