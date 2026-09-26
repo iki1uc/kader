@@ -1,27 +1,92 @@
-#modes {
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  z-index: 10;
-  max-width: calc(100% - 40px);
+/* ─────────────────────────────────────────────────────
+   sys.css · kader · gemeinsame zeichensprache
+   ─────────────────────────────────────────────────────
+   Vier zeichen, die jede seite tragen kann.
+   Sie kosten nichts, sie nehmen nichts weg.
+   Sie schließen die leeren änden.
+   ────────────────────────────────────────────────────*/
+
+/* 1 · DER ATEMZUG
+   Eine linie am unteren rand. Sie atmet. Immer gleich. */
+.kader-atem{
+  position:fixed;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,
+    transparent 0%,
+    rgba(140,240,208,.12) 20%,
+    rgba(140,240,208,.32) 50%,
+    rgba(140,240,208,.12) 80%,
+    transparent 100%);
+  animation:kader-atem 8s ease-in-out infinite;
+  pointer-events:none;z-index:999;
 }
-#modes button {
-  background: transparent;
-  border: 1px solid #1a2a3a;
-  color: #3a5a4a;
-  font-family: inherit;
-  font-size: 9px;
-  letter-spacing: 2px;
-  padding: 5px 10px;
-  cursor: pointer;
-  transition: all .35s;
+@keyframes kader-atem{
+  0%,100%{opacity:.4}
+  50%    {opacity:1}
 }
-#modes button.on {
-  color: #f0d080;
-  border-color: #f0d080;
-  box-shadow: 0 0 10px rgba(240,208,128,.25);
+
+/* 2 · DAS ZEICHEN
+   iki1uc · kader. Immer oben links. Immer gleich.
+   Ersetzt das leere ende mit einem namen. */
+.kader-zeichen{
+  position:fixed;top:14px;left:14px;
+  font-family:'Consolas',monospace;
+  font-size:9px;letter-spacing:3px;
+  color:rgba(58,90,74,.55);
+  z-index:998;pointer-events:none;
+}
+.kader-zeichen b{color:rgba(140,240,208,.7);font-weight:400}
+
+/* 3 · DER LAUF
+   Die kette. Ganz flach. Ganz leise.
+   Zeigt: hier ist mehr. Auch wenn man nicht klickt. */
+.kader-lauf{
+  position:fixed;bottom:12px;left:0;right:0;
+  font-family:'Consolas',monospace;
+  font-size:8px;letter-spacing:4px;
+  color:rgba(58,90,74,.3);
+  overflow:hidden;white-space:nowrap;
+  pointer-events:none;z-index:998;
+}
+.kader-lauf span{
+  display:inline-block;padding-left:100%;
+  animation:kader-lauf 80s linear infinite;
+}
+@keyframes kader-lauf{
+  to{transform:translateX(-100%)}
+}
+
+/* 4 · DIE ECKEN
+   Vier winkel. Andeutende geometrie.
+   Sie sagen: die seite hat einen rahmen. Sie endet. */
+.kader-ecke{
+  position:fixed;width:14px;height:14px;
+  z-index:996;pointer-events:none;opacity:.28;
+  border-color:#8cf0d0;
+}
+.kader-ecke.ol{top:12px;left:12px;border-top:1px solid;border-left:1px solid}
+.kader-ecke.or{top:12px;right:12px;border-top:1px solid;border-right:1px solid}
+.kader-ecke.ul{bottom:12px;left:12px;border-bottom:1px solid;border-left:1px solid}
+.kader-ecke.ur{bottom:12px;right:12px;border-bottom:1px solid;border-right:1px solid}
+
+/* 5 · DIE KANTE
+   Schließt die mitte unten. Kein leeres ende mehr. */
+.kader-kante{
+  position:fixed;bottom:6px;left:50%;transform:translateX(-50%);
+  width:60px;height:1px;
+  background:rgba(140,240,208,.25);
+  pointer-events:none;z-index:997;
+}
+.kader-kante::before,.kader-kante::after{
+  content:'';position:absolute;top:50%;
+  width:3px;height:3px;border-radius:50%;
+  background:rgba(140,240,208,.5);
+  transform:translateY(-50%);
+}
+.kader-kante::before{left:-7px}
+.kader-kante::after{right:-7px}
+
+@media(max-width:640px){
+  .kader-ecke{width:10px;height:10px;opacity:.22}
+  .kader-lauf{font-size:7px;letter-spacing:3px}
+  .kader-zeichen{font-size:8px;letter-spacing:2px}
 }
