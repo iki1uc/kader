@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>6D.SYSTEM · x y z u v w · E2→E∞</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#000;overflow:hidden;height:100vh;font-family:monospace;color:#8aa8a0}
+  canvas{display:block;position:fixed;inset:0}
+
+  #sig{position:fixed;top:22px;left:50%;transform:translateX(-50%);
+       font-size:11px;letter-spacing:9px;color:#3a5a4a;z-index:10;pointer-events:none}
+  #sig b{color:#8cf0d0}
+
+  #axes{position:fixed;inset:0;z-index:10;pointer-events:none}
+  .ax{position:absolute;transform:translate(-50%,-50%);
+      font-size:10px;letter-spacing:2px;
+      color:#4a7a6a;padding:2px 6px;
+      border:1px solid rgba(120,220,150,0.12);border-radius:2px}
+
+  #energie{position:fixed;right:24px;top:50%;transform:translateY(-50%);
+           z-index:10;display:flex;flex-direction:column;gap:5px;
+           pointer-events:none;text-align:right}
+  .e{font-size:9px;letter-spacing:2px;color:#2a4a3a;transition:color .4s}
+  .e.on{color:#b388ff;text-shadow:0 0 10px rgba(179,136,255,.5)}
+
+  #fusion{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);
+          z-index:10;font-size:12px;letter-spacing:5px;color:#3a5a4a;
+          pointer-events:none;transition:color .3s}
+  #fusion.on{color:#f0d080;text-shadow:0 0 16px rgba(240,208,128,.6)}
+
+  #out{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+       z-index:10;font-size:9px;letter-spacing:3px;color:#2a4a3a;
+       display:flex;gap:20px;pointer-events:none}
+  #out span{transition:color .3s}
+  #out span.on{color:#8cf0d0}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="sig">6D · SYSTEM · <b>LIVE</b></div>
+
+<div id="axes"></div>
+
+<div id="energie">
+  <div class="e" data-e="2">E2 · ton</div>
+  <div class="e" data-e="3">E3 · licht</div>
+  <div class="e" data-e="6">E6 · frequenz</div>
+  <div class="e" data-e="8">E8 · geometrie</div>
+  <div class="e" data-e="12">E12 · orbit</div>
+  <div class="e" data-e="inf">E∞ · meta</div>
+</div>
+
+<div id="fusion">6d ⊗ 6e → 6de</div>
+
+<div id="out">
+  <span id="onano">nano</span>
+  <span id="oatom">atom</span>
+  <span id="osimu">simu</span>
+  <span id="obeat">beat∞</span>
+  <span id="orev">rev</span>
+  <span id="owin">win∞</span>
+</div>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ─── ACHSEN · 6 RICHTUNGEN ────────────────────────────────
+   x y z  = cartesisch (unser raum)
+   u v w  = überraum (nicht sichtbar, aber berechenbar)
+   → 6 Einheitsvektoren in 6D. Projektion: u v w kollabieren
+     in x y z mit Gewichtung. So wird 6D im 3D sichtbar.
+───────────────────────────────────────────────────────────*/
+const AXES6 = [
+  { n:'x', c:0xff4444, dir:[ 1, 0, 0, 0, 0, 0] },
+  { n:'y', c:0x44ff44, dir:[ 0, 1, 0, 0, 0, 0] },
+  { n:'z', c:0x4488ff, dir:[ 0, 0, 1, 0, 0, 0] },
+  { n:'u', c:0xffaa44, dir:[ 0, 0, 0, 1, 0, 0] },
+  { n:'v', c:0xff44ff, dir:[ 0, 0, 0, 0, 1, 0] },
+  { n:'w', c:0x44ffff, dir:[ 0, 0, 0, 0, 0, 1] },
+];
+
+/* ─── ENERGIE-STUFEN ───────────────────────────────────────
+   E2 ton        → frequenz der grundschwingung
+   E3 licht      → träger
+   E6 frequenz   → bindung
+   E8 geometrie  → form
+   E12 orbit     → bewegung
+   E∞ meta       → das dazwischen
+───────────────────────────────────────────────────────────*/
+const ENERGIE = [
+  { k:2,   name:'ton',      r:0.6, speed:0.5 },
+  { k:3,   name:'licht',    r:1.1, speed:0.8 },
+  { k:6,   name:'frequenz', r:1.6, speed:1.2 },
+  { k:8,   name:'geometrie',r:2.1, speed:1.6 },
+  { k:12,  name:'orbit',    r:2.7, speed:2.1 },
+  { k:Infinity,name:'meta', r:3.4, speed:2.8 },
+];
+
+/* ─── 6D → 3D PROJEKTION ───────────────────────────────────
+   Punkt (x,y,z,u,v,w) → sichtbar als:
+   X = x + 0.35*(u + v*0.5)
+   Y = y + 0.35*(v + w*0.5)
+   Z = z + 0.35*(w + u*0.5)
+   So bleiben alle 6 Achsen sichtbar ohne Würfel-Illusion.
+───────────────────────────────────────────────────────────*/
+function proj6(p){
+  const [x,y,z,u,v,w] = p;
+  return new THREE.Vector3(
+    x + 0.35*(u + v*0.5),
+    y + 0.35*(v + w*0.5),
+    z + 0.35*(w + u*0.5)
+  );
+}
+
+/* ─── SETUP ────────────────────────────────────────────────*/
+const canvas = document.getElementById('cv');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x000000, 12, 30);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(6, 5, 9);
+
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.4;
+controls.minDistance = 4;
+controls.maxDistance = 24;
+
+scene.add(new THREE.AmbientLight(0x223344, 1.4));
+const dl = new THREE.DirectionalLight(0xaaccff, 1.6);
+dl.position.set(6, 10, 7); scene.add(dl);
+
+/* ─── DIE 6 ACHSEN ALS LINIEN ──────────────────────────────*/
+const axisLines = [];
+AXES6.forEach((a,i)=>{
+  const L = 4.2;
+  const p0 = proj6([0,0,0,0,0,0]);
+  const p1 = proj6(a.dir.map(d=>d*L));
+  const g = new THREE.BufferGeometry().setFromPoints([p0,p1]);
+  const m = new THREE.LineBasicMaterial({color:a.c, transparent:true, opacity:0.55});
+  const line = new THREE.Line(g, m);
+  scene.add(line);
+  axisLines.push({line, axis:a});
+
+  // Achsen-Endpunkt
+  const dot = new THREE.Mesh(
+    new THREE.SphereGeometry(0.07, 16, 16),
+    new THREE.MeshBasicMaterial({color:a.c})
+  );
+  dot.position.copy(p1);
+  scene.add(dot);
+});
+
+/* ─── KERN · DAS ZENTRUM (6d ⊗ 6e) ─────────────────────────*/
+const coreMat = new THREE.MeshStandardMaterial({
+  color:0xf0d080, emissive:0xf0d080, emissiveIntensity:0.9,
+  wireframe:true, transparent:true, opacity:0.9
+});
+const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 1), coreMat);
+scene.add(core);
+
+/* ─── ENERGIE-SCHALEN (E2 … E∞) ────────────────────────────*/
+const shells = ENERGIE.map(e=>{
+  const geo = new THREE.TorusGeometry(e.r, 0.012, 6, 96);
+  const mat = new THREE.MeshBasicMaterial({
+    color:0x2a4a3a, transparent:true, opacity:0.5
+  });
+  const torus = new THREE.Mesh(geo, mat);
+  torus.rotation.x = Math.PI/2;
+  scene.add(torus);
+  return {mesh:torus, e, phase:Math.random()*Math.PI*2};
+});
+
+/* ─── NANO · ATOM · SIMU · PARTIKEL ────────────────────────
+   27 Punkte = 3³ Nano-Gitter. Jeder Punkt trägt 6D-Zustand.
+───────────────────────────────────────────────────────────*/
+const NANO = 3;
+const count = NANO*NANO*NANO;
+const nPos = new Float32Array(count*3);
+const nCol = new Float32Array(count*3);
+const nState = [];
+let idx = 0;
+for(let i=0;i<NANO;i++)for(let j=0;j<NANO;j++)for(let k=0;k<NANO;k++){
+  const x=(i-1)*1.1, y=(j-1)*1.1, z=(k-1)*1.1;
+  const p = proj6([x,y,z, x*0.3, y*0.3, z*0.3]);
+  nPos[idx*3]=p.x; nPos[idx*3+1]=p.y; nPos[idx*3+2]=p.z;
+  nCol[idx*3]=0.4; nCol[idx*3+1]=0.8; nCol[idx*3+2]=0.9;
+  nState.push({base:[x,y,z], phase:Math.random()*Math.PI*2});
+  idx++;
+}
+const nGeo = new THREE.BufferGeometry();
+nGeo.setAttribute('position', new THREE.BufferAttribute(nPos,3));
+nGeo.setAttribute('color', new THREE.BufferAttribute(nCol,3));
+const nMat = new THREE.PointsMaterial({
+  size:0.13, vertexColors:true, transparent:true,
+  opacity:0.9, blending:THREE.AdditiveBlending,
+  depthWrite:false, sizeAttenuation:true
+});
+const nanoPoints = new THREE.Points(nGeo, nMat);
+scene.add(nanoPoints);
+
+/* ─── ACHSEN-LABELS (HTML) ─────────────────────────────────*/
+const axesEl = document.getElementById('axes');
+const axisLabels = AXES6.map(a=>{
+  const d = document.createElement('div');
+  d.className='ax'; d.textContent = a.n;
+  d.style.color = '#'+a.c.toString(16).padStart(6,'0');
+  axesEl.appendChild(d);
+  return {el:d, axis:a};
+});
+
+/* ─── ENERGIE-PANEL ────────────────────────────────────────*/
+const eEls = document.querySelectorAll('#energie .e');
+const fusionEl = document.getElementById('fusion');
+const outEls = {
+  nano:document.getElementById('onano'),
+  atom:document.getElementById('oatom'),
+  simu:document.getElementById('osimu'),
+  beat:document.getElementById('obeat'),
+  rev:document.getElementById('orev'),
+  win:document.getElementById('owin')
+};
+
+/* ─── FUSION · 6d ⊗ 6e = 6de ───────────────────────────────
+   Alle 6 Achsen tragen eine Energie. Wenn alle 6 gleichzeitig
+   einen Peak haben → Fusion. Zeigt sich als Kern-Blitz + Output.
+───────────────────────────────────────────────────────────*/
+let fusePulse = 0;
+let outputs = {nano:false, atom:false, simu:false, beat:false, rev:false, win:false};
+
+/* ─── LOOP ─────────────────────────────────────────────────*/
+const tmpV = new THREE.Vector3();
+const clock = new THREE.Clock();
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  // Kern atmet
+  core.rotation.y += 0.006;
+  core.rotation.x += 0.003;
+  core.scale.setScalar(1 + Math.sin(t*2.2)*0.08);
+
+  // Energie-Schalen rotieren unterschiedlich
+  shells.forEach((s,i)=>{
+    s.mesh.rotation.z += 0.0015*(i+1);
+    s.mesh.rotation.y = Math.sin(t*0.4 + s.phase)*0.6;
+    // Aktivierung: Schale leuchtet wenn Kern nahe ihrer Frequenz pulsiert
+    const activ = 0.5 + 0.5*Math.sin(t * (s.e.speed) + s.phase);
+    const col = new THREE.Color(0x2a4a3a).lerp(new THREE.Color(0xb388ff), activ*0.7);
+    s.mesh.material.color.copy(col);
+    s.mesh.material.opacity = 0.35 + activ*0.5;
+    // HTML-Marker
+    const isOn = activ > 0.75;
+    const key = s.e.k === Infinity ? 'inf' : s.e.k;
+    eEls.forEach(el=>{ if(el.dataset.e == key) el.classList.toggle('on', isOn); });
+  });
+
+  // Nano-Punkte in 6D bewegen
+  const pArr = nGeo.attributes.position.array;
+  const cArr = nGeo.attributes.color.array;
+  let fusionSum = 0;
+  nState.forEach((st,i)=>{
+    const px = st.base[0] + Math.sin(t*0.8 + st.phase)*0.15;
+    const py = st.base[1] + Math.cos(t*0.9 + st.phase)*0.15;
+    const pz = st.base[2] + Math.sin(t*1.0 + st.phase)*0.15;
+    // u v w als "überraum-wobble"
+    const pu = Math.sin(t*0.5 + st.phase)*0.4;
+    const pv = Math.cos(t*0.6 + st.phase)*0.4;
+    const pw = Math.sin(t*0.7 + st.phase)*0.4;
+    const p = proj6([px,py,pz,pu,pv,pw]);
+    pArr[i*3]=p.x; pArr[i*3+1]=p.y; pArr[i*3+2]=p.z;
+    // Farbe kippt mit 6D-Stärke
+    const str = (Math.abs(pu)+Math.abs(pv)+Math.abs(pw))/3;
+    cArr[i*3]   = 0.3 + str*0.7;
+    cArr[i*3+1] = 0.6 + str*0.3;
+    cArr[i*3+2] = 0.9 - str*0.4;
+    fusionSum += str;
+  });
+  nGeo.attributes.position.needsUpdate = true;
+  nGeo.attributes.color.needsUpdate = true;
+
+  // Fusion-Level = durchschnittliche 6D-Stärke
+  const fuse = fusionSum / count;
+  const fuseActive = fuse > 0.28;
+  fusionEl.classList.toggle('on', fuseActive);
+  if(fuseActive && fusePulse<=0){
+    fusePulse = 1.0;
+    // Alle Outputs kurz aktivieren
+    Object.keys(outputs).forEach(k=>{
+      outputs[k] = Math.random() > 0.35;
+      outEls[k].classList.toggle('on', outputs[k]);
+    });
+  }
+  if(fusePulse>0){
+    fusePulse -= 0.02;
+    coreMat.emissiveIntensity = 0.9 + fusePulse*1.5;
+    core.scale.setScalar(core.scale.x + fusePulse*0.02);
+  } else {
+    coreMat.emissiveIntensity = 0.9;
+  }
+
+  // Achsen-Labels projizieren
+  axisLabels.forEach(al=>{
+    const L = 4.6;
+    const p = proj6(al.axis.dir.map(d=>d*L));
+    tmpV.copy(p).project(camera);
+    const x = (tmpV.x*0.5+0.5)*innerWidth;
+    const y = (-tmpV.y*0.5+0.5)*innerHeight;
+    al.el.style.left = x+'px';
+    al.el.style.top = y+'px';
+    al.el.style.opacity = tmpV.z<1 ? 1 : 0;
+  });
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+animate();
+</script>
+</body>
+</html>
