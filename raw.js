@@ -1,20 +1,29 @@
-export const RAW = {
-  RUN8:  { status: rnd(), tmp: tmp() },
-  TMP:   { status: rnd(), tmp: tmp() },
-  "3hit90": { status: rnd(), tmp: tmp() },
-  dir:   { status: rnd(), tmp: tmp() },
-  WpiR:  { status: rnd(), tmp: tmp() },
-  MXU:   { status: rnd(), tmp: tmp() },
-  CLONE: { status: rnd(), tmp: tmp() },
-  FAIL:  { status: rnd(), tmp: tmp() },
-  "9vec3tor": { status: rnd(), tmp: tmp() }
-};
-
-function rnd(){
-  const s = ["green","yellow","red","blue"];
-  return s[Math.floor(Math.random()*s.length)];
+// raw.js — Adapter: liest echte Zustände aus den Modulen
+export async function RAW(){
+  const eintraege = {};
+  
+  // 1. Kern-Zustände aus sys.css / OS_CORE
+  eintraege['RUN8']     = await pruefe('./core/RUN8.js');
+  eintraege['TMP']      = await pruefe('./core/TMP.js');
+  eintraege['3hit90']   = await pruefe('./modules/3hit90/index.html');
+  eintraege['dir']      = await pruefe('./core/dir.js');
+  eintraege['WpiR']     = await pruefe('./core/WpiR.js');
+  eintraege['MXU']      = await pruefe('./core/MXU.js');
+  eintraege['CLONE']    = await pruefe('./core/clone.js');
+  eintraege['FAIL']     = await pruefe('./core/fail.log');
+  eintraege['9vec3tor'] = await pruefe('./core/vec.js');
+  
+  return eintraege;
 }
 
-function tmp(){
-  return (Math.random()*0.999).toFixed(3);
+async function pruefe(pfad){
+  try {
+    const r = await fetch(pfad, { method: 'HEAD' });
+    return {
+      status: r.ok ? 'green' : 'red',
+      tmp: Date.now(),
+    };
+  } catch {
+    return { status: 'red', tmp: Date.now() };
+  }
 }
