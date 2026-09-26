@@ -1,286 +1,515 @@
-
 <!DOCTYPE html>
-<html lang="de">
+<html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>iki1uc · kader · für all jene die nie wieder alleine sein wollen</title>
+<title>tr.html · duruş / durum / nikah dairesi / vaziyet / yatış / yakışır / doğrusal / eğrisel / evrensel / kamera arkası / bana bulaşma / evet be / bırak beni de rahat / tüm katkıların fonksiyonu</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#05070e;overflow:hidden;height:100vh;font-family:monospace;color:#8aa8a0}
+  canvas{display:block;position:fixed;inset:0}
 
-  html,body{
-    height:100%;
-    background:#05070e;
-    color:#c0d0d0;
-    font-family:'Consolas','Courier New',monospace;
-    overflow:hidden;
-    -webkit-font-smoothing:antialiased;
-  }
+  #modes{position:fixed;top:14px;left:14px;right:14px;z-index:10;
+         display:flex;flex-wrap:wrap;gap:3px}
+  #modes button{background:transparent;border:1px solid #1a2a3a;color:#3a5a4a;
+                font-family:inherit;font-size:8.5px;letter-spacing:1.6px;
+                padding:5px 9px;cursor:pointer;transition:all .3s;white-space:nowrap}
+  #modes button:hover{color:#8cf0d0;border-color:#2a4a3a}
+  #modes button.on{color:#f0d080;border-color:#f0d080;
+                   box-shadow:0 0 10px rgba(240,208,128,.22)}
 
-  /* ─── LUFT ────────────────────────────────────────
-     Der Hintergrund atmet. Langsam. Wie im Schlaf.  */
-  #luft{
-    position:fixed;inset:0;
-    background:
-      radial-gradient(ellipse at 50% 40%,
-        rgba(120,220,150,0.05) 0%,
-        rgba(5,7,14,0) 60%),
-      radial-gradient(ellipse at 50% 65%,
-        rgba(179,136,255,0.04) 0%,
-        rgba(5,7,14,0) 55%);
-    animation:atem 12s ease-in-out infinite;
-    pointer-events:none;
-  }
-  @keyframes atem{
-    0%,100%{ opacity:.7; transform:scale(1) }
-    50%    { opacity:1;  transform:scale(1.04) }
-  }
+  #say{position:fixed;bottom:50%;left:50%;transform:translate(-50%,-50%);
+       font-size:clamp(22px,4.5vw,54px);font-weight:100;letter-spacing:.14em;
+       pointer-events:none;z-index:5;transition:all .6s ease;
+       white-space:nowrap;text-align:center}
+  #say small{display:block;font-size:.28em;letter-spacing:.4em;
+             margin-top:14px;opacity:.5;font-weight:400}
 
-  /* ─── DAS MONUMENT ───────────────────────────────
-     Die Weitergabe. Von den Vorfahren. Zu uns.
-     Und von uns. Zu allen.                          */
-  #monument{
-    position:fixed;inset:0;
-    display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    text-align:center;
-    padding:24px;
-    z-index:5;
-  }
+  #reg{position:fixed;top:80px;right:18px;font-size:9px;letter-spacing:1.5px;
+       color:#3a5a4a;z-index:10;pointer-events:none;line-height:1.7;
+       max-width:220px;text-align:right}
+  #reg .e{color:#f0d080;display:block;animation:in .5s ease}
+  @keyframes in{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
 
-  #monument .tr{
-    font-size:clamp(16px,3.2vw,28px);
-    font-weight:300;
-    letter-spacing:.18em;
-    color:#f0d080;
-    text-shadow:0 0 50px rgba(240,208,128,.25);
-    line-height:1.5;
-    max-width:760px;
-  }
+  #tlm{position:fixed;bottom:16px;right:18px;font-size:9px;letter-spacing:1.5px;
+       color:#3a5a4a;z-index:10;pointer-events:none;text-align:right;line-height:1.8;
+       display:none}
+  #tlm.on{display:block}
+  #tlm .v{color:#8cf0d0}
 
-  #monument .de{
-    margin-top:18px;
-    font-size:clamp(13px,2vw,18px);
-    font-weight:300;
-    letter-spacing:.12em;
-    color:#8cf0d0;
-    line-height:1.6;
-    max-width:620px;
-  }
+  #sig{position:fixed;bottom:16px;left:18px;font-size:9px;letter-spacing:2.5px;
+       color:#2a4a3a;z-index:10;pointer-events:none;line-height:1.9}
+  #sig b{color:#8cf0d0}
+  #sig .tr{color:#f0d080}
 
-  #monument .kern{
-    margin-top:48px;
-    font-size:clamp(22px,4.5vw,52px);
-    font-weight:100;
-    letter-spacing:.22em;
-    color:#b388ff;
-    text-shadow:0 0 60px rgba(179,136,255,.3);
-    line-height:1.3;
-    max-width:820px;
-    animation:atem-kern 10s ease-in-out infinite;
-  }
-  @keyframes atem-kern{
-    0%,100%{ opacity:.8 }
-    50%    { opacity:1 }
-  }
-
-  #monument .spruch{
-    margin-top:38px;
-    font-size:10.5px;
-    letter-spacing:.35em;
-    color:#3a5a4a;
-    max-width:560px;
-    line-height:2.2;
-  }
-
-  /* ─── FÜR ALLE · IMMER ───────────────────────── */
-  #fuerAlle{
-    position:fixed;
-    bottom:28px;left:50%;transform:translateX(-50%);
-    font-size:9.5px;
-    letter-spacing:.32em;
-    color:#4a6a5a;
-    text-align:center;
-    line-height:2.2;
-    z-index:6;
-    max-width:min(90vw,720px);
-  }
-  #fuerAlle b{color:#f0d080;font-weight:400}
-  #fuerAlle .all{color:#8cf0d0;font-weight:400}
-
-  /* ─── TÜREN ──────────────────────────────────────
-     Kein Menü. Keine Liste. Leise Räume.            */
-  #tueren{
-    position:fixed;
-    top:22px;left:50%;transform:translateX(-50%);
-    display:flex;flex-wrap:wrap;gap:12px 20px;
-    justify-content:center;
-    z-index:7;
-    max-width:92vw;
-  }
-  #tueren a{
-    color:#3a5a4a;
-    text-decoration:none;
-    font-size:9px;
-    letter-spacing:.32em;
-    padding:4px 0;
-    border-bottom:1px solid transparent;
-    transition:color .5s,border-color .5s;
-  }
-  #tueren a:hover{
-    color:#8cf0d0;
-    border-bottom-color:#8cf0d0;
-  }
-
-  /* ─── FUSS ─────────────────────────────────────── */
-  #fuss{
-    position:fixed;
-    bottom:28px;right:24px;
-    font-size:9px;
-    letter-spacing:.3em;
-    color:#1e3328;
-    z-index:6;
-  }
-  #fuss b{color:#3a5a4a;font-weight:400}
-
-  /* ─── DIE KETTE ────────────────────────────────── */
-  #kette{
-    position:fixed;
-    bottom:28px;left:24px;
-    font-size:9px;
-    letter-spacing:.25em;
-    color:#1e3328;
-    z-index:6;
-    line-height:1.9;
-    display:none;
-  }
-  #kette.on{display:block}
-  #kette b{color:#3a5a4a;font-weight:400}
-
-  @media(max-width:640px){
-    #tueren{top:14px;gap:8px 12px}
-    #tueren a{font-size:8px;letter-spacing:.22em}
-    #fuerAlle{bottom:76px;font-size:8.5px}
-    #fuss{bottom:14px;right:14px}
-    #kette{display:none}
-    #monument .kern{letter-spacing:.14em}
-  }
+  #de{position:fixed;top:22px;right:18px;z-index:10}
+  #de a{color:#3a5a4a;text-decoration:none;font-size:9px;letter-spacing:3px;
+        padding:4px 10px;border:1px solid #1a2a3a;transition:all .4s}
+  #de a:hover{color:#8cf0d0;border-color:#3a5a4a}
 </style>
 </head>
 <body>
-
-<div id="luft"></div>
-
-<nav id="tueren">
-  <a href="stage.html">stage</a>
-  <a href="master.html">master</a>
-  <a href="spitze.html">spitze</a>
-  <a href="stand.html">stand</a>
-  <a href="raum.html">raum</a>
-  <a href="pyramide.html">pyramide</a>
-  <a href="CUBE.html">cube</a>
-  <a href="kumar.html">kumar</a>
-  <a href="zum.html">zum</a>
-</nav>
-
-<div id="monument">
-
-  <div class="tr">
-    TR · atalardan atladatan bizlere sunar
-  </div>
-
-  <div class="de">
-    Türkiye · was die Vorfahren übersprungen haben,<br>
-    wird uns übergeben · und wir geben es weiter
-  </div>
-
-  <div class="kern">
-    für all jene<br>
-    die nie wieder<br>
-    alleine sein wollen
-  </div>
-
-  <div class="spruch">
-    kein besucher · kein user<br>
-    ein du · ein ich · ein sein<br>
-    wieimmer iki1uc · kader
-  </div>
-
+<canvas id="cv"></canvas>
+<div id="modes"></div>
+<div id="say"></div>
+<div id="reg"></div>
+<div id="tlm">
+  <div>vaziyet · <span class="v" id="tStand">–</span></div>
+  <div>durum · <span class="v" id="tUm">–</span></div>
+  <div>doğrusal · <span class="v" id="tLin">–</span></div>
+  <div>eğrisel · <span class="v" id="tUn">–</span></div>
+  <div>katkı · <span class="v" id="tBei">–</span></div>
+  <div>katkısız · <span class="v" id="tNo">–</span></div>
 </div>
-
-<div id="fuerAlle">
-  <span class="all">für alle brüder · für alle menschen</span><br>
-  maßstab und grundlage · glück · schlaf · ruhe<br>
-  <b>leben · zum überleben · niemals allein</b>
+<div id="sig">
+  <span class="tr">tr.html</span> · <b>14</b> durum<br>
+  bir duran · nice duruş
 </div>
+<div id="de"><a href="de.html">DE →</a></div>
 
-<div id="kette">
-  visitor → online → raw →<br>
-  respo-map → spitze → master →<br>
-  <b>die eine zahl</b>
-</div>
-
-<div id="fuss">
-  <b>iki1uc</b> · kader · <span id="zeit"></span>
-</div>
-
-<script type="module">
-/* ──────────────────────────────────────────────────────
-   index.html · iki1uc · kader
-   ─────────────────────────────────────────────────────
-   Botschaft:
-   TR · atalardan atladatan bizlere sunar
-   → was die vorfahren trugen, wird uns übergeben
-   → und wir geben es weiter
-
-   Setzung:
-   für all jene die nie wieder alleine sein wollen
-   ────────────────────────────────────────────────────── */
-
-// Zeit — nicht als Uhr, als Anwesenheit
-const zeitEl = document.getElementById('zeit');
-function setzeZeit(){
-  const jetzt = new Date();
-  const hh = String(jetzt.getHours()).padStart(2,'0');
-  const mm = String(jetzt.getMinutes()).padStart(2,'0');
-  zeitEl.textContent = `${hh}:${mm}`;
-}
-setzeZeit();
-setInterval(setzeZeit, 30000);
-
-// Die Kette zeigt sich, wenn man die Maus unten links verweilt.
-// Kein Zwang. Kein Aufklappen. Nur ein leises Angebot.
-const kette = document.getElementById('kette');
-let ketteTimer = null;
-document.addEventListener('mousemove', (e) => {
-  const nearLeft = e.clientX < 120 && e.clientY > window.innerHeight - 120;
-  if(nearLeft && !ketteTimer){
-    ketteTimer = setTimeout(() => {
-      kette.classList.add('on');
-      setTimeout(() => kette.classList.remove('on'), 4000);
-    }, 800);
-  }
-  if(!nearLeft && ketteTimer){
-    clearTimeout(ketteTimer);
-    ketteTimer = null;
-  }
-});
-
-// Wenn jemand den Raum betritt, wird das Licht ruhiger.
-// Kein Tracking. Kein Log. Nur ein Atemzug, der sich öffnet.
-window.addEventListener('focus', () => {
-  document.getElementById('monument').style.transition = 'opacity 1.2s';
-  document.getElementById('monument').style.opacity = '1';
-});
-window.addEventListener('blur', () => {
-  document.getElementById('monument').style.transition = 'opacity 2.4s';
-  document.getElementById('monument').style.opacity = '0.55';
-});
-
-// Diese Seite ist der Eingang.
-// Von hier aus gehen die Türen in alle Räume.
-// Und keine führt zurück ins Alleinsein.
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
 </script>
 
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ─────────────────────────────────────────────────────────
+   TR.HTML
+   Duran. Etrafında durumlar.
+   Her durum, durmanın başka bir yolu.
+   ─────────────────────────────────────────────────────────── */
+
+const MODES = [
+  { id:'durus',       n:'DURUŞ',            sub:'durmak · temel' },
+  { id:'durum',       n:'DURUM',            sub:'etrafta duran şey' },
+  { id:'nikah',       n:'NİKAH DAİRESİ',    sub:'bağlar · kaydeder' },
+  { id:'vaziyet',     n:'VAZİYET',          sub:'şu an ne var' },
+  { id:'yatis',       n:'YATIŞ',            sub:'park · dinlenir' },
+  { id:'yakışır',     n:'YAKIŞIR',          sub:'nasıl olması gerekir' },
+  { id:'dogrusal',    n:'DOĞRUSAL',         sub:'düz · öngörülebilir' },
+  { id:'egrisel',     n:'EĞRİSEL',          sub:'kıvrımlı · sürprizli' },
+  { id:'evrensel',    n:'EVRENSEL',         sub:'hep birden' },
+  { id:'kamera',      n:'KAMERA ARKASI',    sub:'nasıl yapıldı' },
+  { id:'bulasma',     n:'BANA BULAŞMA',     sub:'direnç · hayır' },
+  { id:'evetbe',      n:'EVET BE',          sub:'onay · evet' },
+  { id:'birak',       n:'BIRAK BENİ DE RAHAT', sub:'geri çekilme · boş' },
+  { id:'fonksiyon',   n:'TÜM KATKILARIN FONKSİYONU', sub:'katkı + katkısız' },
+];
+
+/* ─── SAHNE ──────────────────────────────────────────────── */
+const canvas = document.getElementById('cv');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070e);
+scene.fog = new THREE.Fog(0x05070e, 12, 30);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, .1, 100);
+camera.position.set(4.5, 3.2, 7);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = .06;
+controls.autoRotate = true;
+controls.autoRotateSpeed = .22;
+controls.target.set(0, .5, 0);
+controls.minDistance = 3;
+controls.maxDistance = 18;
+
+scene.add(new THREE.AmbientLight(0x223344, 1.2));
+const dl = new THREE.DirectionalLight(0xf0e0c0, 1.6);
+dl.position.set(5, 9, 6); scene.add(dl);
+const dl2 = new THREE.DirectionalLight(0x88ddff, .5);
+dl2.position.set(-5, -3, -5); scene.add(dl2);
+
+/* ─── DURAN · GÖVDE ──────────────────────────────────────── */
+const standGroup = new THREE.Group();
+scene.add(standGroup);
+
+const boxGeo = new THREE.BoxGeometry(.5, 2.4, .5);
+const boxMat = new THREE.MeshStandardMaterial({
+  color:0x44aa77, emissive:0x44aa77, emissiveIntensity:.35,
+  roughness:.35, metalness:.75
+});
+const box = new THREE.Mesh(boxGeo, boxMat);
+box.position.y = .7;
+standGroup.add(box);
+
+const boxEdges = new THREE.LineSegments(
+  new THREE.EdgesGeometry(boxGeo),
+  new THREE.LineBasicMaterial({color:0x88ddbb, transparent:true, opacity:.5})
+);
+boxEdges.position.copy(box.position);
+standGroup.add(boxEdges);
+
+const baseRing = new THREE.Mesh(
+  new THREE.RingGeometry(.55, .85, 72),
+  new THREE.MeshBasicMaterial({color:0x44aa77, transparent:true, opacity:.35, side:THREE.DoubleSide})
+);
+baseRing.rotation.x = -Math.PI/2;
+baseRing.position.y = -.5;
+standGroup.add(baseRing);
+
+/* ─── DURUM · ÜÇ HALKA ───────────────────────────────────── */
+const rings = [];
+for(let i=0;i<3;i++){
+  const r = .9 + i*.42;
+  const g = new THREE.TorusGeometry(r, .008, 6, 96);
+  const m = new THREE.MeshBasicMaterial({color:0x88ddff, transparent:true, opacity:.35});
+  const t = new THREE.Mesh(g, m);
+  t.rotation.x = Math.PI/2;
+  t.position.y = .25 + i*.22;
+  scene.add(t);
+  rings.push({mesh:t, speed:.0015*(i+1), base:t.position.y, phase:i*1.4});
+}
+
+/* ─── NİKAH DAİRESİ · KAYIT ──────────────────────────────── */
+const regGroup = new THREE.Group();
+scene.add(regGroup);
+const registered = [];
+
+/* ─── DOĞRUSAL · IŞIN ────────────────────────────────────── */
+const beamGeo = new THREE.BufferGeometry().setFromPoints([
+  new THREE.Vector3(0, -1.2, 0),
+  new THREE.Vector3(0,  2.2, 0)
+]);
+const beamMat = new THREE.LineBasicMaterial({color:0xf0d080, transparent:true, opacity:0});
+const beam = new THREE.Line(beamGeo, beamMat);
+scene.add(beam);
+
+/* ─── EĞRİSEL · DALGA ────────────────────────────────────── */
+const wavePts = [];
+for(let i=0;i<=120;i++){
+  const u = i/120;
+  const y = -1.2 + u*3.4;
+  wavePts.push(new THREE.Vector3(Math.sin(u*Math.PI*6)*.5, y, Math.cos(u*Math.PI*4)*.3));
+}
+const waveGeo = new THREE.BufferGeometry().setFromPoints(wavePts);
+const waveMat = new THREE.LineBasicMaterial({color:0xb388ff, transparent:true, opacity:0});
+const wave = new THREE.Line(waveGeo, waveMat);
+scene.add(wave);
+
+/* ─── KAMERA ARKASI · YAPIM İZLERİ ───────────────────────── */
+const makeGroup = new THREE.Group();
+scene.add(makeGroup);
+makeGroup.visible = false;
+
+const axG = new THREE.BufferGeometry().setFromPoints([
+  new THREE.Vector3(-2,0,0), new THREE.Vector3(2,0,0),
+  new THREE.Vector3(0,-1.5,0), new THREE.Vector3(0,2.5,0),
+  new THREE.Vector3(0,0,-2), new THREE.Vector3(0,0,2),
+]);
+const axL = new THREE.LineSegments(axG, new THREE.LineBasicMaterial({
+  color:0x3a5a4a, transparent:true, opacity:.5
+}));
+makeGroup.add(axL);
+
+const wire = new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.BoxGeometry(1.2, 3, 1.2)),
+  new THREE.LineBasicMaterial({color:0x8cf0d0, transparent:true, opacity:.28})
+);
+wire.position.y = .6;
+makeGroup.add(wire);
+
+/* ─── TÜM KATKILAR · 14×14 IZGARA ────────────────────────── */
+const F = 14;
+const fCount = F*F;
+const fPos = new Float32Array(fCount*3);
+const fCol = new Float32Array(fCount*3);
+const fState = [];
+for(let i=0;i<F;i++)for(let j=0;j<F;j++){
+  const k = i*F + j;
+  const x = (i/(F-1)-.5)*4;
+  const z = (j/(F-1)-.5)*4;
+  fPos[k*3]=x; fPos[k*3+1]=0; fPos[k*3+2]=z;
+  fCol[k*3]=.2; fCol[k*3+1]=.4; fCol[k*3+2]=.5;
+  fState.push({
+    base:[x, z],
+    katki: Math.random() > .35,
+    phase: Math.random()*Math.PI*2,
+  });
+}
+const fGeo = new THREE.BufferGeometry();
+fGeo.setAttribute('position', new THREE.BufferAttribute(fPos, 3));
+fGeo.setAttribute('color', new THREE.BufferAttribute(fCol, 3));
+const fMat = new THREE.PointsMaterial({
+  size:.1, vertexColors:true, transparent:true, opacity:0,
+  blending:THREE.AdditiveBlending, depthWrite:false, sizeAttenuation:true
+});
+const fPoints = new THREE.Points(fGeo, fMat);
+scene.add(fPoints);
+
+/* ─── UI ─────────────────────────────────────────────────── */
+const modesEl = document.getElementById('modes');
+const sayEl = document.getElementById('say');
+const regEl = document.getElementById('reg');
+const tlmEl = document.getElementById('tlm');
+
+const modeButtons = MODES.map(m=>{
+  const b = document.createElement('button');
+  b.textContent = m.n;
+  b.addEventListener('click', ()=>setMode(m.id));
+  modesEl.appendChild(b);
+  return {btn:b, mode:m};
+});
+
+let currentMode = 'durus';
+const mouseNDC = new THREE.Vector2(0,0);
+
+function setMode(id){
+  currentMode = id;
+  modeButtons.forEach(mb=>mb.btn.classList.toggle('on', mb.mode.id === id));
+  const m = MODES.find(x=>x.id===id);
+  sayEl.style.color = '#8aa8a0';
+
+  const is = (x)=> x === id;
+
+  rings.forEach(r=> r.mesh.material.opacity = is('durum') || is('evrensel') ? .45 : 0);
+  beamMat.opacity = is('dogrusal') || is('evrensel') ? .7 : 0;
+  waveMat.opacity = is('egrisel') || is('evrensel') ? .6 : 0;
+  makeGroup.visible = is('kamera') || is('evrensel');
+  fMat.opacity = is('fonksiyon') || is('evrensel') ? .85 : 0;
+
+  regEl.style.display = is('nikah') ? 'block' : 'none';
+  tlmEl.classList.toggle('on', is('vaziyet'));
+
+  boxMat.emissiveIntensity = is('durus') ? .35
+                           : is('birak') ? .04
+                           : is('bulasma') ? .5
+                           : is('evetbe') ? .9
+                           : is('yakışır') ? .7
+                           : is('yatis') ? .25
+                           : .45;
+  boxMat.color.setHex(is('birak') ? 0x1a2a2a : 0x44aa77);
+  boxMat.emissive.setHex(is('birak') ? 0x0a1212 : 0x44aa77);
+
+  const greet = {
+    durus:       'duruyor',
+    durum:       'etrafta duran şey',
+    nikah:       'tıkla · kaydedilir',
+    vaziyet:     'şu an ne var',
+    yatis:       'park · sakin',
+    yakışır:     'böyle olması gerekir',
+    dogrusal:    'düz · öngörülebilir',
+    egrisel:     'kıvrımlı · sürprizli',
+    evrensel:    'hep birden',
+    kamera:      'nasıl yapıldı',
+    bulasma:     'benimle değil',
+    evetbe:      'evet · evet · evet',
+    birak:       '…',
+    fonksiyon:   'katkı + katkısız',
+  }[id];
+  sayEl.innerHTML = `${greet}<small>${m.n}</small>`;
+  sayEl.style.color = (id === 'birak') ? '#1a3a2a'
+                    : (id === 'bulasma') ? '#b388ff'
+                    : (id === 'evetbe') ? '#8cf0d0'
+                    : (id === 'nikah') ? '#f0d080'
+                    : '#8aa8a0';
+}
+
+/* ─── FARE ───────────────────────────────────────────────── */
+canvas.addEventListener('pointermove', e=>{
+  mouseNDC.x = (e.clientX/innerWidth)*2 - 1;
+  mouseNDC.y = -(e.clientY/innerHeight)*2 + 1;
+});
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let downPos = null;
+
+canvas.addEventListener('pointerdown', e=>{ downPos = {x:e.clientX, y:e.clientY}; });
+canvas.addEventListener('pointerup', e=>{
+  if(!downPos) return;
+  const dx = e.clientX - downPos.x;
+  const dy = e.clientY - downPos.y;
+  if(dx*dx + dy*dy > 25) return;
+
+  pointer.x = (e.clientX/innerWidth)*2 - 1;
+  pointer.y = -(e.clientY/innerHeight)*2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+
+  const hits = raycaster.intersectObject(box);
+
+  if(currentMode === 'nikah'){
+    const t = new Date().toLocaleTimeString('tr-TR');
+    registered.push(t);
+    const e = document.createElement('span');
+    e.className = 'e';
+    e.textContent = `№ ${String(registered.length).padStart(3,'0')} · ${t}`;
+    regEl.appendChild(e);
+    if(regEl.children.length > 8) regEl.removeChild(regEl.firstChild);
+
+    const a = Math.random()*Math.PI*2;
+    const r = .9 + Math.random()*1.6;
+    const mk = new THREE.Mesh(
+      new THREE.SphereGeometry(.05, 12, 12),
+      new THREE.MeshBasicMaterial({color:0xf0d080})
+    );
+    mk.position.set(Math.cos(a)*r, -.48, Math.sin(a)*r);
+    regGroup.add(mk);
+  }
+
+  if(hits.length){
+    boxMat.emissiveIntensity = 2.4;
+  }
+});
+
+/* ─── DÖNGÜ ──────────────────────────────────────────────── */
+const clock = new THREE.Clock();
+const tmp = new THREE.Vector3();
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  const is = (x)=> x === currentMode;
+
+  const breath = 1 + Math.sin(t*1.6)*.02;
+  box.scale.set(breath, 1, breath);
+  boxEdges.scale.copy(box.scale);
+
+  if(boxMat.emissiveIntensity > (is('birak') ? .04 : .35)){
+    boxMat.emissiveIntensity = Math.max(
+      is('birak') ? .04 : .35,
+      boxMat.emissiveIntensity - .04
+    );
+  }
+
+  if(is('yatis')){
+    standGroup.rotation.z += (Math.PI/2 - standGroup.rotation.z)*.05;
+    standGroup.position.y += (-.5 - standGroup.position.y)*.05;
+  } else {
+    standGroup.rotation.z += (0 - standGroup.rotation.z)*.08;
+    standGroup.position.y += (0 - standGroup.position.y)*.08;
+  }
+
+  if(is('yakışır')){
+    standGroup.rotation.x *= .9;
+    standGroup.rotation.y += (0 - standGroup.rotation.y)*.08;
+    standGroup.position.x *= .9;
+    standGroup.position.z *= .9;
+  }
+
+  if(is('evrensel')){
+    standGroup.rotation.y += .004;
+    standGroup.rotation.x = Math.sin(t*.4)*.15;
+  } else if(!is('yakışır')){
+    standGroup.rotation.x *= .96;
+  }
+
+  rings.forEach((r,i)=>{
+    r.mesh.rotation.z += r.speed * (is('birak') ? .2 : 1);
+    r.mesh.position.y = r.base + Math.sin(t*.6 + r.phase)*.06;
+    if(r.mesh.material.opacity > 0){
+      r.mesh.material.opacity = (is('durum') ? .45 : .3)
+                              + Math.sin(t*1.2 + r.phase)*.08;
+    }
+  });
+
+  if(is('dogrusal') || is('evrensel')){
+    beamMat.opacity = .5 + Math.abs(Math.sin(t*.8))*.4;
+    beam.scale.y = .8 + Math.sin(t*.8)*.2;
+  }
+
+  if(is('egrisel') || is('evrensel')){
+    const p = waveGeo.attributes.position;
+    for(let i=0;i<p.count;i++){
+      const u = i/(p.count-1);
+      const x = Math.sin(u*Math.PI*6 + t*1.5)*.5;
+      const z = Math.cos(u*Math.PI*4 + t*1.1)*.3;
+      p.setX(i, x);
+      p.setZ(i, z);
+    }
+    p.needsUpdate = true;
+  }
+
+  if(makeGroup.visible){
+    wire.rotation.y = t*.2;
+  }
+
+  if(is('bulasma')){
+    tmp.set(mouseNDC.x, mouseNDC.y, .5).unproject(camera);
+    const dir = tmp.sub(camera.position).normalize();
+    const dist = -camera.position.y / dir.y;
+    const hit = camera.position.clone().add(dir.multiplyScalar(dist));
+    const toBox = new THREE.Vector3(0, 0, 0).sub(hit);
+    const d = toBox.length();
+    if(d < 1.8){
+      toBox.normalize().multiplyScalar((1.8 - d)*.4);
+      standGroup.position.x += toBox.x;
+      standGroup.position.z += toBox.z;
+    } else {
+      standGroup.position.x *= .92;
+      standGroup.position.z *= .92;
+    }
+  } else if(is('evetbe')){
+    tmp.set(mouseNDC.x, mouseNDC.y, .5).unproject(camera);
+    const dir = tmp.sub(camera.position).normalize();
+    const dist = -camera.position.y / dir.y;
+    const hit = camera.position.clone().add(dir.multiplyScalar(dist));
+    standGroup.position.x += (hit.x - standGroup.position.x)*.04;
+    standGroup.position.z += (hit.z - standGroup.position.z)*.04;
+  } else {
+    if(!is('yatis')){
+      standGroup.position.x *= .94;
+      standGroup.position.z *= .94;
+    }
+  }
+
+  if(is('fonksiyon') || is('evrensel')){
+    const p = fGeo.attributes.position.array;
+    const c = fGeo.attributes.color.array;
+    let nBei = 0, nNo = 0;
+    fState.forEach((st,i)=>{
+      const target = st.katki
+        ? [st.base[0]*.75, st.base[1]*.75]
+        : [st.base[0]*1.05, st.base[1]*1.05];
+      const now = [p[i*3], p[i*3+2]];
+      const dx = target[0] - now[0];
+      const dz = target[1] - now[1];
+      p[i*3]   += dx*.02 + Math.sin(t*1.2 + st.phase)*.004;
+      p[i*3+2] += dz*.02 + Math.cos(t*1.1 + st.phase)*.004;
+      p[i*3+1]  = Math.sin(t*.8 + st.phase)*.08;
+      if(st.katki){
+        nBei++;
+        c[i*3]   = .6; c[i*3+1] = .9; c[i*3+2] = .8;
+      } else {
+        nNo++;
+        c[i*3]   = .5; c[i*3+1] = .3; c[i*3+2] = .7;
+      }
+    });
+    fGeo.attributes.position.needsUpdate = true;
+    fGeo.attributes.color.needsUpdate = true;
+    tBei.textContent = nBei;
+    tNo.textContent  = nNo;
+  }
+
+  if(is('vaziyet')){
+    tStand.textContent = standGroup.position.length().toFixed(2);
+    tUm.textContent    = rings.length;
+    tLin.textContent   = beamMat.opacity.toFixed(2);
+    tUn.textContent    = waveMat.opacity.toFixed(2);
+    if(!is('fonksiyon')) { tBei.textContent = '–'; tNo.textContent = '–'; }
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+setMode('durus');
+animate();
+</script>
 </body>
 </html>
