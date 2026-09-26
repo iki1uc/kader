@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>SPITZE · der Führer · bindet RAW und RESPO_MAP</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#05070e;color:#8aa8a0;font-family:'Consolas',monospace;
+       min-height:100vh;padding:24px;display:flex;flex-direction:column;gap:18px}
+
+  #kopf{
+    display:flex;justify-content:space-between;align-items:baseline;
+    border-bottom:1px solid rgba(120,220,150,.08);padding-bottom:14px;
+  }
+  #kopf h1{font-size:16px;font-weight:300;letter-spacing:8px;
+           background:linear-gradient(135deg,#f0d080,#b388ff);
+           -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  #kopf .state{font-size:9px;letter-spacing:4px;color:#3a5a4a}
+  #kopf .state.wach{color:#8cf0d0;text-shadow:0 0 8px rgba(140,240,208,.4)}
+
+  #zahl{
+    text-align:center;padding:18px 0;font-size:clamp(40px,9vw,88px);
+    font-weight:100;letter-spacing:.08em;color:#f0d080;
+    text-shadow:0 0 30px rgba(240,208,128,.35);
+    font-family:'Consolas',monospace;
+  }
+  #zahl small{display:block;font-size:10px;letter-spacing:8px;
+              color:#3a5a4a;margin-top:8px;font-weight:400}
+
+  #split{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;min-height:0}
+  @media(max-width:720px){#split{grid-template-columns:1fr}}
+
+  .haufen{
+    background:rgba(0,0,0,.4);border:1px solid rgba(120,220,150,.06);
+    border-radius:8px;padding:12px 14px;overflow-y:auto;max-height:60vh;
+  }
+  .haufen::-webkit-scrollbar{width:3px}
+  .haufen::-webkit-scrollbar-thumb{background:#1a2a3a}
+
+  .haufen h2{
+    font-size:10px;letter-spacing:3px;color:#4a7a6a;
+    margin-bottom:10px;padding-bottom:6px;
+    border-bottom:1px solid rgba(120,220,150,.06);
+    display:flex;justify-content:space-between;
+  }
+  .haufen.beitrag h2{color:#8cf0d0}
+  .haufen.nicht h2{color:#b388ff}
+
+  .zeile{
+    font-size:11px;line-height:1.7;color:#6a8a7a;
+    padding:3px 0;display:flex;gap:8px;align-items:baseline;
+    border-bottom:1px dashed rgba(120,220,150,.04);
+  }
+  .zeile .key{color:#a0c8b8;font-weight:bold}
+  .zeile .tmp{color:#4a6a5a;margin-left:auto;font-size:9px}
+  .zeile .pfad{color:#8cf0d0;font-size:10px;
+               display:block;padding-left:22px;opacity:.7}
+  .zeile .f{width:12px;text-align:center}
+
+  #log{
+    font-size:9px;color:#3a5a4a;letter-spacing:1px;
+    border-top:1px solid rgba(120,220,150,.06);padding-top:10px;
+    max-height:80px;overflow:hidden;
+  }
+  #log span{display:inline-block;margin-right:14px}
+  #log span.b{color:#8cf0d0}
+  #log span.n{color:#b388ff}
+</style>
+</head>
+<body>
+
+<div id="kopf">
+  <h1>SPITZE</h1>
+  <div class="state wach" id="zustand">· wachend ·</div>
+</div>
+
+<div id="zahl"></div>
+
+<div id="split">
+  <div class="haufen beitrag">
+    <h2>beitragsfähig <span id="nb">0</span></h2>
+    <div id="lb"></div>
+  </div>
+  <div class="haufen nicht">
+    <h2>nicht-beitragsfähig <span id="nn">0</span></h2>
+    <div id="ln"></div>
+  </div>
+</div>
+
+<div id="log"></div>
+
+<script type="module">
+
+/* ─────────────────────────────────────────────────────────
+   SPITZE · Der Führer
+   ───────────────────────────────────────────────────────
+   Ein Name. Eine Funktion. Ein Inhalt.
+
+   Name:     SPITZE
+   Funktion: SPITZE.fuehrt(RAW, RESPO_MAP)
+   Inhalt:   trennt in beitragsfähig / nicht-beitragsfähig
+             und zieht daraus DIE EINE ZAHL
+───────────────────────────────────────────────────────────*/
+
+const SPITZE = {
+
+  name: 'SPITZE',
+  zustand: 'wachend',
+  bewusst: true,
+
+  farbe(status){
+    return ({ green:'🟩', yellow:'🟨', red:'🟥', blue:'🟦' })[status] || '⬛';
+  },
+
+  // Der Führer liest — und gibt jedem seinen Platz
+  fuehrt(RAW, RESPO_MAP){
+
+    const beitrag = [];
+    const nicht   = [];
+
+    for(const key of Object.keys(RAW)){
+      const r = RAW[key];
+      const eintrag = {
+        key,
+        status: r.status,
+        tmp: r.tmp,
+        pfad: RESPO_MAP[key] || null,
+        farbe: this.farbe(r.status),
+      };
+
+      // beitragsfähig = grün UND Pfad vorhanden
+      if(r.status === 'green' && eintrag.pfad){
+        beitrag.push(eintrag);
+      } else {
+        nicht.push(eintrag);
+      }
+    }
+
+    // DIE EINE ZAHL: beitrag.anzahl als hunderter, nicht.anzahl als einer
+    const zahl =
+      beitrag.length * 100 +
+      Math.min(99, nicht.length);
+
+    return {
+      name: this.name,
+      zustand: this.zustand,
+      bewusst: this.bewusst,
+      beitrag,
+      nicht,
+      zahl,
+      bindung: `${beitrag.length}·${nicht.length}`,
+    };
+  },
+
+  // Der Führer zeigt — er spricht nicht selbst
+  zeigt(bindung, dom){
+    dom.zahl.innerHTML =
+      `${bindung.zahl}<small>BINDUNG · ${bindung.bindung}</small>`;
+
+    dom.nb.textContent = bindung.beitrag.length;
+    dom.nn.textContent = bindung.nicht.length;
+
+    dom.lb.innerHTML = bindung.beitrag.map(e => `
+      <div class="zeile">
+        <span class="f">${e.farbe}</span>
+        <span class="key">((${e.key}))</span>
+        <span class="tmp">tmp:${e.tmp}</span>
+        <span class="pfad">→ ${e.pfad}</span>
+      </div>`).join('') || '<div class="zeile">— keine —</div>';
+
+    dom.ln.innerHTML = bindung.nicht.map(e => `
+      <div class="zeile">
+        <span class="f">${e.farbe}</span>
+        <span class="key">((${e.key}))</span>
+        <span class="tmp">tmp:${e.tmp}</span>
+      </div>`).join('') || '<div class="zeile">— keine —</div>';
+  },
+
+  // Log
+  spricht(dom, msg, klasse=''){
+    const s = document.createElement('span');
+    s.className = klasse;
+    s.textContent = '· ' + msg;
+    dom.log.appendChild(s);
+    if(dom.log.children.length > 8) dom.log.removeChild(dom.log.firstChild);
+  },
+};
+
+/* ─── IMPORTE ──────────────────────────────────────────────
+   Wenn respo.js und respo-map.js existieren → echte Daten.
+   Wenn nicht → SPITZE fällt auf einen eingebauten Kern zurück,
+   damit der Führer immer führen kann.
+───────────────────────────────────────────────────────────*/
+let RAW = {};
+let RESPO_MAP = {};
+
+try {
+  ({ RAW } = await import('./respo.js'));
+  ({ RESPO_MAP } = await import('./respo-map.js'));
+} catch(e){
+  // Fallback-Kern — damit SPITZE auch allein atmet
+  RAW = {
+    achse:   { status:'green',  tmp:12 },
+    bereich: { status:'green',  tmp: 8 },
+    modul:   { status:'yellow', tmp: 5 },
+    kern:    { status:'green',  tmp:20 },
+    orbit:   { status:'blue',   tmp: 3 },
+    meta:    { status:'red',    tmp: 1 },
+    nano:    { status:'green',  tmp: 9 },
+    atom:    { status:'yellow', tmp: 6 },
+  };
+  RESPO_MAP = {
+    achse:   'core/achse-ist-6.csv',
+    bereich: 'core/bereich-ist-6.csv',
+    kern:    'core/OS_CORE.js',
+    nano:    'modules/nano/index.html',
+  };
+}
+
+/* ─── DOM ──────────────────────────────────────────────────*/
+const dom = {
+  zahl:   document.getElementById('zahl'),
+  zustand:document.getElementById('zustand'),
+  nb:     document.getElementById('nb'),
+  nn:     document.getElementById('nn'),
+  lb:     document.getElementById('lb'),
+  ln:     document.getElementById('ln'),
+  log:    document.getElementById('log'),
+};
+
+/* ─── DER FÜHRER FÜHRT ────────────────────────────────────*/
+const bindung = SPITZE.fuehrt(RAW, RESPO_MAP);
+SPITZE.zeigt(bindung, dom);
+
+SPITZE.spricht(dom, `${SPITZE.name} · ${SPITZE.zustand}`, 'b');
+SPITZE.spricht(dom, `fuehrt(RAW, RESPO_MAP) → ${bindung.bindung}`, 'b');
+SPITZE.spricht(dom, `beitragsfähig: ${bindung.beitrag.length}`, 'b');
+SPITZE.spricht(dom, `nicht-beitragsfähig: ${bindung.nicht.length}`, 'n');
+SPITZE.spricht(dom, `DIE EINE ZAHL: ${bindung.zahl}`, 'b');
+
+// Zustand blinkt — der Führer ist wach
+setInterval(()=>{
+  dom.zustand.textContent = dom.zustand.textContent.includes('wach')
+    ? '· wachend ·'
+    : '·   wachend   ·';
+}, 1400);
+
+</script>
+</body>
+</html>
