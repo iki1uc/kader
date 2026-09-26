@@ -82,23 +82,24 @@
     font-size:11px;
     letter-spacing:.35em;
     color:#3a5a4a;
-    max-width:520px;
-    line-height:2;
+    max-width:560px;
+    line-height:2.2;
   }
 
-  /* ─── FÜR DIE, DIE NICHT SCHLAFEN KÖNNEN ─────── */
+  /* ─── FÜR ALLE BRÜDER · FÜR ALLE MENSCHEN ──── */
   #bruder{
     position:fixed;
     bottom:32px;left:50%;transform:translateX(-50%);
     font-size:10px;
-    letter-spacing:.3em;
+    letter-spacing:.32em;
     color:#4a6a5a;
     text-align:center;
-    line-height:2;
+    line-height:2.2;
     z-index:6;
-    max-width:90vw;
+    max-width:min(90vw,680px);
   }
   #bruder b{color:#f0d080;font-weight:400}
+  #bruder .all{color:#8cf0d0;font-weight:400}
 
   /* ─── TÜREN ──────────────────────────────────────
      Kein Menü. Keine Liste. Leise Räume.            */
@@ -154,7 +155,7 @@
   @media(max-width:640px){
     #tueren{top:16px;gap:10px 14px}
     #tueren a{font-size:8.5px;letter-spacing:.25em}
-    #bruder{bottom:80px}
+    #bruder{bottom:80px;font-size:9px}
     #fuss{bottom:16px;right:16px}
     #kette{display:none}
   }
@@ -167,7 +168,6 @@
 <nav id="tueren">
   <a href="master.html">master</a>
   <a href="spitze.html">spitze</a>
-  <a href="pyramide.html">pyramide</a>
   <a href="stand.html">stand</a>
   <a href="CUBE.html">cube</a>
   <a href="de.html">de</a>
@@ -182,13 +182,15 @@
   <div class="du">du</div>
   <div class="spruch">
     kein besucher · kein user<br>
-    ein du · ein ich · ein sein
+    ein ich · ein du · ein sein<br>
+    für alle · nicht für einen
   </div>
 </div>
 
 <div id="bruder">
-  für die, die nicht schlafen können · <b>für deinen bruder</b><br>
-  dieses licht bleibt an · du bist nicht allein
+  <span class="all">für alle brüder · für alle menschen</span><br>
+  maßstab und grundlage · glück · schlaf · ruhe<br>
+  <b>leben · zum überleben</b>
 </div>
 
 <div id="kette">
@@ -207,7 +209,11 @@
    ─────────────────────────────────────────────────────
    Diese Seite tut fast nichts. Sie atmet.
    Sie sammelt keine Daten. Sie zählt nicht.
-   Sie ist nur da. Für die, die nicht schlafen können.
+   Sie ist da — für alle. Nicht für einen.
+
+   Maßstab:  jeder mensch
+   Grundlage: leben · zum überleben
+   Zustand:  glück · schlaf · ruhe
    ────────────────────────────────────────────────────── */
 
 // Zeit — nicht als Uhr, als Anwesenheit
@@ -221,7 +227,7 @@ function setzeZeit(){
 setzeZeit();
 setInterval(setzeZeit, 30000);
 
-// Die Kette zeigt sich, wenn man die Maus unten links verweilt
+// Die Kette zeigt sich, wenn man die Maus unten links verweilt.
 // Kein Zwang. Kein Aufklappen. Nur ein leises Angebot.
 const kette = document.getElementById('kette');
 let ketteTimer = null;
@@ -250,8 +256,8 @@ window.addEventListener('blur', () => {
   document.getElementById('monument').style.opacity = '0.55';
 });
 
-// Wenn ein Du hereinkommt, das nicht schlafen kann —
-// es gibt nichts zu klicken. Das hier ist schon die Antwort.
+// Das hier ist kein Ort für einen.
+// Es ist der Ort, von dem aus alle gemeint sind.
 </script>
 
 </body>
