@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline';
+  style-src 'self' 'unsafe-inline';
+  frame-ancestors 'self';
+  object-src 'none';
+">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
 <title>iki1uc · kader · für all jene die nie wieder alleine sein wollen</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
@@ -16,8 +25,13 @@
     -webkit-font-smoothing:antialiased;
   }
 
-  /* ─── LUFT ────────────────────────────────────────
-     Der Hintergrund atmet. Langsam. Wie im Schlaf.  */
+  canvas#lichter{
+    position:fixed;inset:0;
+    display:block;
+    z-index:2;
+    pointer-events:none;
+  }
+
   #luft{
     position:fixed;inset:0;
     background:
@@ -29,15 +43,13 @@
         rgba(5,7,14,0) 55%);
     animation:atem 12s ease-in-out infinite;
     pointer-events:none;
+    z-index:1;
   }
   @keyframes atem{
     0%,100%{ opacity:.7; transform:scale(1) }
     50%    { opacity:1;  transform:scale(1.04) }
   }
 
-  /* ─── DAS MONUMENT ───────────────────────────────
-     Die Weitergabe. Von den Vorfahren. Zu uns.
-     Und von uns. Zu allen.                          */
   #monument{
     position:fixed;inset:0;
     display:flex;flex-direction:column;
@@ -45,6 +57,7 @@
     text-align:center;
     padding:24px;
     z-index:5;
+    pointer-events:none;
   }
 
   #monument .tr{
@@ -92,7 +105,6 @@
     line-height:2.2;
   }
 
-  /* ─── FÜR ALLE · IMMER ───────────────────────── */
   #fuerAlle{
     position:fixed;
     bottom:28px;left:50%;transform:translateX(-50%);
@@ -103,12 +115,11 @@
     line-height:2.2;
     z-index:6;
     max-width:min(90vw,720px);
+    pointer-events:none;
   }
   #fuerAlle b{color:#f0d080;font-weight:400}
   #fuerAlle .all{color:#8cf0d0;font-weight:400}
 
-  /* ─── TÜREN ──────────────────────────────────────
-     Kein Menü. Keine Liste. Leise Räume.            */
   #tueren{
     position:fixed;
     top:22px;left:50%;transform:translateX(-50%);
@@ -131,7 +142,6 @@
     border-bottom-color:#8cf0d0;
   }
 
-  /* ─── FUSS ─────────────────────────────────────── */
   #fuss{
     position:fixed;
     bottom:28px;right:24px;
@@ -142,33 +152,76 @@
   }
   #fuss b{color:#3a5a4a;font-weight:400}
 
-  /* ─── DIE KETTE ────────────────────────────────── */
-  #kette{
+  #wache{
     position:fixed;
-    bottom:28px;left:24px;
-    font-size:9px;
-    letter-spacing:.25em;
-    color:#1e3328;
-    z-index:6;
-    line-height:1.9;
-    display:none;
+    top:22px;right:22px;
+    font-size:8.5px;letter-spacing:.3em;
+    color:#2a4a3a;
+    text-align:right;line-height:2;
+    z-index:6;pointer-events:none;
   }
-  #kette.on{display:block}
-  #kette b{color:#3a5a4a;font-weight:400}
+  #wache .v{color:#8cf0d0}
+
+  .ecke{
+    position:fixed;width:14px;height:14px;
+    z-index:998;pointer-events:none;
+    opacity:.28;border-color:#8cf0d0;
+  }
+  .ecke.ol{top:12px;left:12px;border-top:1px solid;border-left:1px solid}
+  .ecke.or{top:12px;right:12px;border-top:1px solid;border-right:1px solid}
+  .ecke.ul{bottom:12px;left:12px;border-bottom:1px solid;border-left:1px solid}
+  .ecke.ur{bottom:12px;right:12px;border-bottom:1px solid;border-right:1px solid}
+
+  #sperre{display:none}
+  html[data-gate="gesperrt"] body > *:not(#sperre){display:none !important}
+  html[data-gate="gesperrt"] #sperre{
+    display:flex;position:fixed;inset:0;
+    align-items:center;justify-content:center;flex-direction:column;
+    background:#05070e;z-index:9999;text-align:center;padding:24px}
+  #sperre .wort{font-size:clamp(22px,5vw,44px);
+                font-weight:100;letter-spacing:.45em;
+                color:#8cf0d0;margin-bottom:16px}
+  #sperre .grund{font-size:10px;letter-spacing:.35em;color:#b388ff}
 
   @media(max-width:640px){
     #tueren{top:14px;gap:8px 12px}
     #tueren a{font-size:8px;letter-spacing:.22em}
     #fuerAlle{bottom:76px;font-size:8.5px}
     #fuss{bottom:14px;right:14px}
-    #kette{display:none}
+    #wache{font-size:7.5px;top:14px;right:14px}
     #monument .kern{letter-spacing:.14em}
   }
 </style>
 </head>
 <body>
 
+<!-- 1 · TORWÄCHTER -->
+<script>
+  window.__EVO_GATE = { ok:false, grund:'wird geprüft', zeit:Date.now() };
+</script>
+
+<!-- 2 · DER WÄCHTER -->
+<script src="security.js"></script>
+
+<!-- 3 · TÜRSTEHER -->
+<script>
+  (function(){
+    if(window.__EVO_WACHE === true){
+      window.__EVO_GATE.ok = true;
+      window.__EVO_GATE.grund = 'wächter aktiv';
+    } else {
+      window.__EVO_GATE.grund = 'security.js fehlt';
+      document.documentElement.setAttribute('data-gate','gesperrt');
+      document.addEventListener('DOMContentLoaded', () => {
+        const g = document.getElementById('sperre-grund');
+        if(g) g.textContent = window.__EVO_GATE.grund;
+      });
+    }
+  })();
+</script>
+
 <div id="luft"></div>
+<canvas id="lichter"></canvas>
 
 <nav id="tueren">
   <a href="stage.html">stage</a>
@@ -213,72 +266,216 @@
   <b>leben · zum überleben · niemals allein</b>
 </div>
 
-<div id="kette">
-  visitor → online → raw →<br>
-  respo-map → spitze → master →<br>
-  <b>die eine zahl</b>
+<div id="wache">
+  <div>wache · <span class="v" id="wv">aktiv</span></div>
+  <div>lichter · <span class="v" id="wl">840</span></div>
 </div>
 
 <div id="fuss">
   <b>iki1uc</b> · kader · <span id="zeit"></span>
 </div>
 
-<script type="module">
-/* ──────────────────────────────────────────────────────
+<div id="sperre">
+  <div class="wort">GESPERRT</div>
+  <div class="grund" id="sperre-grund">wächter nicht geladen</div>
+</div>
+
+<div class="ecke ol"></div>
+<div class="ecke or"></div>
+<div class="ecke ul"></div>
+<div class="ecke ur"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
    index.html · iki1uc · kader
-   ─────────────────────────────────────────────────────
-   Botschaft:
-   TR · atalardan atladatan bizlere sunar
-   → was die vorfahren trugen, wird uns übergeben
-   → und wir geben es weiter
+   ═══════════════════════════════════════════════════════════
+   840 lichter. Ein monument.
+   Atome atmen. Energie fließt. Wächter wacht.
 
-   Setzung:
-   für all jene die nie wieder alleine sein wollen
-   ────────────────────────────────────────────────────── */
+   Was diese seite tut:
+     - 840 kleine lichter atmen (atome · energie · grundlegendes)
+     - monument steht (botschaft · setzung)
+     - türen sind offen (kein zwang)
+     - wächter läuft (schützt · stört nicht)
 
-// Zeit — nicht als Uhr, als Anwesenheit
-const zeitEl = document.getElementById('zeit');
-function setzeZeit(){
-  const jetzt = new Date();
-  const hh = String(jetzt.getHours()).padStart(2,'0');
-  const mm = String(jetzt.getMinutes()).padStart(2,'0');
-  zeitEl.textContent = `${hh}:${mm}`;
+   Was sie nicht tut:
+     - kein tracking
+     - kein log
+     - kein zwang
+   ═══════════════════════════════════════════════════════════ */
+
+if(!window.__EVO_GATE || !window.__EVO_GATE.ok){
+  console.log('kader · index · gesperrt');
+} else {
+
+  /* ─── ZEIT ─────────────────────────────────────── */
+  const zeitEl = document.getElementById('zeit');
+  function setzeZeit(){
+    const jetzt = new Date();
+    zeitEl.textContent =
+      String(jetzt.getHours()).padStart(2,'0') + ':' +
+      String(jetzt.getMinutes()).padStart(2,'0');
+  }
+  setzeZeit();
+  setInterval(setzeZeit, 30000);
+
+  /* ─── WÄCHTER-BERICHT LESEN ────────────────────── */
+  setTimeout(() => {
+    const b = window.__EVO_BERICHT;
+    if(!b) return;
+    if(b.fehler.length){
+      document.getElementById('wv').textContent = 'fehler';
+      document.getElementById('wv').style.color = '#b388ff';
+    }
+  }, 400);
+
+  /* ═══════════════════════════════════════════════════════════
+     DIE 840 LICHTER
+     ─────────────────────────────────────────────────────────
+     840 = 3 × 280 = 3 × 4 × 70 = 12 × 70
+     Sechs farben (die sechs stoffe):
+       o2 · co2 · h2o · kern · mana · aura
+     Jedes licht atmet mit eigener phase.
+     ═══════════════════════════════════════════════════════════ */
+
+  const cv = document.getElementById('lichter');
+  const ctx = cv.getContext('2d');
+  let W, H;
+
+  function resize(){
+    const dpr = Math.min(devicePixelRatio, 2);
+    W = cv.width = innerWidth * dpr;
+    H = cv.height = innerHeight * dpr;
+    cv.style.width = innerWidth + 'px';
+    cv.style.height = innerHeight + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  /* ─── FARBEN · sechs stoffe ───────────────────── */
+  const FARBEN = [
+    { name:'o2',   r:124, g:224, b:168 },  // grün
+    { name:'co2',  r:255, g:204, b:68  },  // gold
+    { name:'h2o',  r:95,  g:200, b:255 },  // cyan
+    { name:'kern', r:179, g:136, b:255 },  // violett
+    { name:'mana', r:140, g:240, b:208 },  // türkis
+    { name:'aura', r:240, g:208, b:128 },  // sonne
+  ];
+
+  /* ─── 840 LICHTER ──────────────────────────────── */
+  const N = 840;
+  const lichter = [];
+
+  for(let i = 0; i < N; i++){
+    // verteile in kreisförmigem cluster um die mitte
+    const seite = Math.floor(i / 140);      // 6 gruppen von 140
+    const gruppe = i % 6;                    // welche farbe
+    const winkel = (i / N) * Math.PI * 2 + gruppe * 0.5;
+    const radiusFactor = 0.15 + (i % 100) / 100 * 0.55;
+
+    lichter.push({
+      a: winkel,
+      r: radiusFactor,
+      farbe: FARBEN[gruppe],
+      phase: Math.random() * Math.PI * 2,
+      tempo: 0.4 + Math.random() * 0.6,
+      größe: 0.8 + Math.random() * 1.6,
+      atem: 0.5,
+    });
+  }
+
+  document.getElementById('wl').textContent = N;
+
+  /* ─── ATEM · jede farbe hat ihre eigene phase ─── */
+  let t = 0;
+
+  function zeichne(){
+    if(!window.__EVO_GATE.ok) return;
+    requestAnimationFrame(zeichne);
+    t += 0.012;
+
+    // sanft wischen statt clear — hinterlässt leichte spur
+    ctx.fillStyle = 'rgba(5,7,14,0.18)';
+    ctx.fillRect(0, 0, innerWidth, innerHeight);
+
+    const cx = innerWidth / 2;
+    const cy = innerHeight / 2;
+    const R = Math.min(innerWidth, innerHeight) * 0.5;
+
+    /* die gruppen atmen in eigenen takten */
+    const atem = {
+      o2:   0.5 + 0.5 * Math.sin(t * 0.40),
+      co2:  0.5 + 0.5 * Math.sin(t * 0.40 + Math.PI),
+      h2o:  0.5 + 0.5 * Math.sin(t * 0.28),
+      kern: 0.5 + 0.5 * Math.sin(t * 0.20),
+      mana: 0.5 + 0.5 * Math.sin(t * 0.36),
+      aura: 0.5 + 0.5 * Math.sin(t * 0.32),
+    };
+
+    lichter.forEach(l => {
+      // position
+      const w = l.a + t * 0.05 * l.tempo;
+      const rr = l.r * R * (1 + 0.03 * Math.sin(t * l.tempo + l.phase));
+      const x = cx + Math.cos(w) * rr;
+      const y = cy + Math.sin(w) * rr * 0.85;
+
+      // atem der farbe
+      const farbAtem = atem[l.farbe.name] || 0.5;
+      const eigenAtem = 0.6 + 0.4 * Math.sin(t * l.tempo * 2 + l.phase);
+      const alpha = (0.15 + 0.55 * farbAtem) * eigenAtem;
+
+      // größe
+      const s = l.größe * (1 + 0.5 * farbAtem) * (1 + 0.3 * Math.sin(t + l.phase));
+
+      // zeichnen
+      ctx.beginPath();
+      ctx.arc(x, y, s, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${l.farbe.r},${l.farbe.g},${l.farbe.b},${alpha})`;
+      ctx.fill();
+
+      // kleiner glanz um größere lichter
+      if(s > 1.8){
+        ctx.beginPath();
+        ctx.arc(x, y, s * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${l.farbe.r},${l.farbe.g},${l.farbe.b},${alpha * 0.08})`;
+        ctx.fill();
+      }
+    });
+
+    /* ─── DER KERN · in der mitte ─────────────────── */
+    const kernGlut = ctx.createRadialGradient(cx, cy, 0, cx, cy, R * 0.18);
+    const hauch = 0.25 + 0.15 * Math.sin(t * 0.5);
+    kernGlut.addColorStop(0, `rgba(140,240,208,${hauch})`);
+    kernGlut.addColorStop(0.5, `rgba(240,208,128,${hauch * 0.4})`);
+    kernGlut.addColorStop(1, 'rgba(140,240,208,0)');
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 0.18, 0, Math.PI * 2);
+    ctx.fillStyle = kernGlut;
+    ctx.fill();
+  }
+  zeichne();
+
+  /* ─── FOKUS · ruhiger wenn nicht aktiv ──────────── */
+  window.addEventListener('focus', () => {
+    document.getElementById('monument').style.transition = 'opacity 1.2s';
+    document.getElementById('monument').style.opacity = '1';
+  });
+  window.addEventListener('blur', () => {
+    document.getElementById('monument').style.transition = 'opacity 2.4s';
+    document.getElementById('monument').style.opacity = '0.55';
+  });
+
+  console.log('');
+  console.log('  iki1uc · kader · index');
+  console.log('  ─────────────────────────────────');
+  console.log('  840 lichter · sechs stoffe');
+  console.log('  atem · energie · grundlegendes');
+  console.log('  wächter · aktiv');
+  console.log('  atalardan atladatan bizlere sunar');
+  console.log('');
+
 }
-setzeZeit();
-setInterval(setzeZeit, 30000);
-
-// Die Kette zeigt sich, wenn man die Maus unten links verweilt.
-// Kein Zwang. Kein Aufklappen. Nur ein leises Angebot.
-const kette = document.getElementById('kette');
-let ketteTimer = null;
-document.addEventListener('mousemove', (e) => {
-  const nearLeft = e.clientX < 120 && e.clientY > window.innerHeight - 120;
-  if(nearLeft && !ketteTimer){
-    ketteTimer = setTimeout(() => {
-      kette.classList.add('on');
-      setTimeout(() => kette.classList.remove('on'), 4000);
-    }, 800);
-  }
-  if(!nearLeft && ketteTimer){
-    clearTimeout(ketteTimer);
-    ketteTimer = null;
-  }
-});
-
-// Wenn jemand den Raum betritt, wird das Licht ruhiger.
-// Kein Tracking. Kein Log. Nur ein Atemzug, der sich öffnet.
-window.addEventListener('focus', () => {
-  document.getElementById('monument').style.transition = 'opacity 1.2s';
-  document.getElementById('monument').style.opacity = '1';
-});
-window.addEventListener('blur', () => {
-  document.getElementById('monument').style.transition = 'opacity 2.4s';
-  document.getElementById('monument').style.opacity = '0.55';
-});
-
-// Diese Seite ist der Eingang.
-// Von hier aus gehen die Türen in alle Räume.
-// Und keine führt zurück ins Alleinsein.
 </script>
 
 </body>
