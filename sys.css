@@ -1,0 +1,27 @@
+#modes {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  z-index: 10;
+  max-width: calc(100% - 40px);
+}
+#modes button {
+  background: transparent;
+  border: 1px solid #1a2a3a;
+  color: #3a5a4a;
+  font-family: inherit;
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all .35s;
+}
+#modes button.on {
+  color: #f0d080;
+  border-color: #f0d080;
+  box-shadow: 0 0 10px rgba(240,208,128,.25);
+}
