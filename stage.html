@@ -1,1 +1,264 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ich und du · iki1uc · kader</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
 
+  html,body{
+    height:100%;
+    background:#05070e;
+    color:#c0d0d0;
+    font-family:'Consolas','Courier New',monospace;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ─── LUFT ────────────────────────────────────────
+     Der Hintergrund atmet. Langsam. Wie im Schlaf.  */
+  #luft{
+    position:fixed;inset:0;
+    background:
+      radial-gradient(ellipse at 50% 45%,
+        rgba(120,220,150,0.05) 0%,
+        rgba(5,7,14,0) 60%),
+      radial-gradient(ellipse at 50% 60%,
+        rgba(179,136,255,0.04) 0%,
+        rgba(5,7,14,0) 55%);
+    animation:atem 12s ease-in-out infinite;
+    pointer-events:none;
+  }
+  @keyframes atem{
+    0%,100%{ opacity:.7; transform:scale(1) }
+    50%    { opacity:1;  transform:scale(1.04) }
+  }
+
+  /* ─── DAS MONUMENT ───────────────────────────────
+     Ich und Du. Groß, ruhig, nicht laut.             */
+  #monument{
+    position:fixed;inset:0;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    text-align:center;
+    padding:24px;
+    z-index:5;
+  }
+
+  #monument .ich,
+  #monument .und,
+  #monument .du{
+    font-weight:100;
+    letter-spacing:.28em;
+    line-height:1.15;
+    transition:color .8s;
+  }
+
+  #monument .ich{
+    font-size:clamp(36px,7vw,84px);
+    color:#8cf0d0;
+    text-shadow:0 0 40px rgba(140,240,208,.15);
+  }
+  #monument .und{
+    font-size:clamp(14px,2vw,22px);
+    color:#3a5a4a;
+    letter-spacing:.6em;
+    margin:14px 0;
+  }
+  #monument .du{
+    font-size:clamp(36px,7vw,84px);
+    color:#b388ff;
+    text-shadow:0 0 40px rgba(179,136,255,.15);
+    animation:atem-du 12s ease-in-out infinite;
+  }
+  @keyframes atem-du{
+    0%,100%{ opacity:.75 }
+    50%    { opacity:1 }
+  }
+
+  #monument .spruch{
+    margin-top:38px;
+    font-size:11px;
+    letter-spacing:.35em;
+    color:#3a5a4a;
+    max-width:560px;
+    line-height:2.2;
+  }
+
+  /* ─── FÜR ALLE BRÜDER · FÜR ALLE MENSCHEN ──── */
+  #bruder{
+    position:fixed;
+    bottom:32px;left:50%;transform:translateX(-50%);
+    font-size:10px;
+    letter-spacing:.32em;
+    color:#4a6a5a;
+    text-align:center;
+    line-height:2.2;
+    z-index:6;
+    max-width:min(90vw,680px);
+  }
+  #bruder b{color:#f0d080;font-weight:400}
+  #bruder .all{color:#8cf0d0;font-weight:400}
+
+  /* ─── TÜREN ──────────────────────────────────────
+     Kein Menü. Keine Liste. Leise Räume.            */
+  #tueren{
+    position:fixed;
+    top:24px;left:50%;transform:translateX(-50%);
+    display:flex;flex-wrap:wrap;gap:14px 22px;
+    justify-content:center;
+    z-index:7;
+    max-width:92vw;
+  }
+  #tueren a{
+    color:#3a5a4a;
+    text-decoration:none;
+    font-size:9.5px;
+    letter-spacing:.35em;
+    padding:4px 0;
+    border-bottom:1px solid transparent;
+    transition:color .5s,border-color .5s;
+  }
+  #tueren a:hover{
+    color:#8cf0d0;
+    border-bottom-color:#8cf0d0;
+  }
+
+  /* ─── FUSS ───────────────────────────────────────
+     iki1uc · kader · die kette                       */
+  #fuss{
+    position:fixed;
+    bottom:32px;right:24px;
+    font-size:9px;
+    letter-spacing:.3em;
+    color:#1e3328;
+    z-index:6;
+  }
+  #fuss b{color:#3a5a4a;font-weight:400}
+
+  /* ─── FUGE ───────────────────────────────────────
+     Wer mag, kann die Kette hören.                  */
+  #kette{
+    position:fixed;
+    bottom:32px;left:24px;
+    font-size:9px;
+    letter-spacing:.25em;
+    color:#1e3328;
+    z-index:6;
+    line-height:1.9;
+    display:none;
+  }
+  #kette.on{display:block}
+  #kette b{color:#3a5a4a;font-weight:400}
+
+  @media(max-width:640px){
+    #tueren{top:16px;gap:10px 14px}
+    #tueren a{font-size:8.5px;letter-spacing:.25em}
+    #bruder{bottom:80px;font-size:9px}
+    #fuss{bottom:16px;right:16px}
+    #kette{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div id="luft"></div>
+
+<nav id="tueren">
+  <a href="master.html">master</a>
+  <a href="spitze.html">spitze</a>
+  <a href="stand.html">stand</a>
+  <a href="CUBE.html">cube</a>
+  <a href="de.html">de</a>
+  <a href="sub.html">sub</a>
+  <a href="zauber6y.html">zauber</a>
+  <a href="zum.html">zum</a>
+</nav>
+
+<div id="monument">
+  <div class="ich">ich</div>
+  <div class="und">· und ·</div>
+  <div class="du">du</div>
+  <div class="spruch">
+    kein besucher · kein user<br>
+    ein ich · ein du · ein sein<br>
+    für alle · nicht für einen
+  </div>
+</div>
+
+<div id="bruder">
+  <span class="all">für alle brüder · für alle menschen</span><br>
+  maßstab und grundlage · glück · schlaf · ruhe<br>
+  <b>leben · zum überleben</b>
+</div>
+
+<div id="kette">
+  visitor → online → raw →<br>
+  respo-map → spitze → master →<br>
+  <b>die eine zahl</b>
+</div>
+
+<div id="fuss">
+  <b>iki1uc</b> · kader · <span id="zeit"></span>
+</div>
+
+<script type="module">
+/* ──────────────────────────────────────────────────────
+   index.html · ich und du · iki1uc · kader
+   ─────────────────────────────────────────────────────
+   Diese Seite tut fast nichts. Sie atmet.
+   Sie sammelt keine Daten. Sie zählt nicht.
+   Sie ist da — für alle. Nicht für einen.
+
+   Maßstab:  jeder mensch
+   Grundlage: leben · zum überleben
+   Zustand:  glück · schlaf · ruhe
+   ────────────────────────────────────────────────────── */
+
+// Zeit — nicht als Uhr, als Anwesenheit
+const zeitEl = document.getElementById('zeit');
+function setzeZeit(){
+  const jetzt = new Date();
+  const hh = String(jetzt.getHours()).padStart(2,'0');
+  const mm = String(jetzt.getMinutes()).padStart(2,'0');
+  zeitEl.textContent = `${hh}:${mm}`;
+}
+setzeZeit();
+setInterval(setzeZeit, 30000);
+
+// Die Kette zeigt sich, wenn man die Maus unten links verweilt.
+// Kein Zwang. Kein Aufklappen. Nur ein leises Angebot.
+const kette = document.getElementById('kette');
+let ketteTimer = null;
+document.addEventListener('mousemove', (e) => {
+  const nearLeft = e.clientX < 120 && e.clientY > window.innerHeight - 120;
+  if(nearLeft && !ketteTimer){
+    ketteTimer = setTimeout(() => {
+      kette.classList.add('on');
+      setTimeout(() => kette.classList.remove('on'), 4000);
+    }, 800);
+  }
+  if(!nearLeft && ketteTimer){
+    clearTimeout(ketteTimer);
+    ketteTimer = null;
+  }
+});
+
+// Wenn jemand den Raum betritt, wird das Licht ruhiger.
+// Kein Tracking. Kein Log. Nur ein Atemzug, der sich öffnet.
+window.addEventListener('focus', () => {
+  document.getElementById('monument').style.transition = 'opacity 1.2s';
+  document.getElementById('monument').style.opacity = '1';
+});
+window.addEventListener('blur', () => {
+  document.getElementById('monument').style.transition = 'opacity 2.4s';
+  document.getElementById('monument').style.opacity = '0.55';
+});
+
+// Das hier ist kein Ort für einen.
+// Es ist der Ort, von dem aus alle gemeint sind.
+</script>
+
+</body>
+</html>
