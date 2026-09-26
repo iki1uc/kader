@@ -1,0 +1,15 @@
+<pre id="master"></pre>
+<script type="module">
+  import { ONLINE } from "./online.js";
+  import { MASTER } from "./master.js";
+
+  function tick(){
+    const online = ONLINE();
+    const master = MASTER(online);
+    document.getElementById("master").textContent =
+      JSON.stringify(master, null, 2);
+  }
+
+  tick();
+  setInterval(tick, 2000);
+</script>
