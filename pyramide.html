@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>pyramide.html · nutzbar / unnutzbar · eigentlich · nur ja</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#05070e;overflow:hidden;height:100vh;font-family:monospace;color:#8aa8a0}
+  canvas{display:block;position:fixed;inset:0}
+
+  #modus{
+    position:fixed;top:22px;left:50%;transform:translateX(-50%);
+    display:flex;gap:0;z-index:10;
+  }
+  #modus button{
+    background:transparent;border:1px solid #1a2a3a;
+    color:#3a5a4a;font-family:inherit;font-size:10px;
+    letter-spacing:4px;padding:8px 22px;cursor:pointer;
+    transition:all .4s;
+  }
+  #modus button.on{color:#f0d080;border-color:#f0d080;
+    box-shadow:0 0 14px rgba(240,208,128,.2)}
+
+  #wort{
+    position:fixed;bottom:50%;left:50%;
+    transform:translate(-50%,-50%);
+    font-size:clamp(28px,6vw,72px);
+    font-weight:100;letter-spacing:.15em;
+    pointer-events:none;z-index:5;
+    transition:all .8s ease;
+    white-space:nowrap;
+  }
+  #wort.eigentlich{color:#f0d080;text-shadow:0 0 30px rgba(240,208,128,.4)}
+  #wort.nurja{color:#2a4a3a;text-shadow:none;letter-spacing:.5em}
+
+  #sig{
+    position:fixed;bottom:20px;left:20px;
+    font-size:9px;color:#2a4a3a;letter-spacing:3px;
+    z-index:10;pointer-events:none;line-height:1.8;
+  }
+  #sig b{color:#8cf0d0}
+  #sig .no{color:#3a2a2a}
+
+  #hint{
+    position:fixed;bottom:20px;right:20px;
+    font-size:9px;color:#2a4a3a;letter-spacing:2px;
+    z-index:10;pointer-events:none;text-align:right;line-height:1.8;
+  }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="modus">
+  <button id="bN" class="on">NUTZBAR</button>
+  <button id="bU">UNNUTZBAR</button>
+</div>
+
+<div id="wort" class="eigentlich">eigentlich</div>
+
+<div id="sig">
+  pyramide · <b>4 ecken</b> → 1 spitze<br>
+  unten: welt · oben: das eigentliche<br>
+  <span class="no">unnutzbar wenn still</span>
+</div>
+
+<div id="hint">
+  klick = ecke → spitze<br>
+  ziehen = drehen<br>
+  „nur ja" = nichts tun
+</div>
+
+<script type="importmap">
+{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ─────────────────────────────────────────────────────────
+   PYRAMIDE · ZWEI ZUSTÄNDE
+   nutzbar   → die vier ecken leuchten, spitze sendet
+   unnutzbar → alles bleibt stehen, nur atmet
+   eigentlich → die spitze (wahrer name)
+   nur ja     → grundzustand, leer, bejahend
+───────────────────────────────────────────────────────────*/
+
+const canvas = document.getElementById('cv');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x05070e, 10, 26);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, .1, 100);
+camera.position.set(5.5, 4.5, 7.5);
+
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+controls.dampingFactor = .06;
+controls.autoRotate = true;
+controls.autoRotateSpeed = .35;
+controls.minDistance = 4;
+controls.maxDistance = 20;
+
+scene.add(new THREE.AmbientLight(0x223344, 1.3));
+const dl = new THREE.DirectionalLight(0xf0e0c0, 1.7);
+dl.position.set(6, 10, 7); scene.add(dl);
+const dl2 = new THREE.DirectionalLight(0x88ddff, .5);
+dl2.position.set(-6, -4, -6); scene.add(dl2);
+
+/* ─── VIER ECKEN · DIE WELT ───────────────────────────────*/
+const H = 2.4, B = 1.6;
+const corners = [
+  new THREE.Vector3(-B, -H*0.4, -B),
+  new THREE.Vector3( B, -H*0.4, -B),
+  new THREE.Vector3( B, -H*0.4,  B),
+  new THREE.Vector3(-B, -H*0.4,  B),
+];
+const apex = new THREE.Vector3(0, H*0.6, 0);
+
+/* ─── DIE PYRAMIDE ALS KANTEN ─────────────────────────────*/
+const edgeMat = new THREE.LineBasicMaterial({
+  color:0x3a5a4a, transparent:true, opacity:.55
+});
+
+// Grundriss
+const baseGeo = new THREE.BufferGeometry().setFromPoints([...corners, corners[0]]);
+scene.add(new THREE.Line(baseGeo, edgeMat));
+
+// Vier Kanten zur Spitze
+const apexLines = [];
+corners.forEach((c,i)=>{
+  const g = new THREE.BufferGeometry().setFromPoints([c, apex]);
+  const l = new THREE.Line(g, edgeMat.clone());
+  scene.add(l);
+  apexLines.push(l);
+});
+
+/* ─── ECKEN-PUNKTE (nutzbar) ──────────────────────────────*/
+const cornerDots = corners.map((c,i)=>{
+  const m = new THREE.Mesh(
+    new THREE.SphereGeometry(.09, 20, 20),
+    new THREE.MeshStandardMaterial({
+      color:0x44aa77, emissive:0x44aa77, emissiveIntensity:.6
+    })
+  );
+  m.position.copy(c);
+  m.userData.i = i;
+  scene.add(m);
+  return m;
+});
+
+/* ─── SPITZE · DAS EIGENTLICHE ────────────────────────────*/
+const apexMat = new THREE.MeshStandardMaterial({
+  color:0xf0d080, emissive:0xf0d080, emissiveIntensity:1.1,
+  wireframe:true, transparent:true, opacity:.9
+});
+const apexMesh = new THREE.Mesh(new THREE.OctahedronGeometry(.28, 1), apexMat);
+apexMesh.position.copy(apex);
+scene.add(apexMesh);
+
+/* ─── FLÄCHEN (halbtransparent) ───────────────────────────*/
+const faceMat = new THREE.MeshStandardMaterial({
+  color:0x1a3a2a, emissive:0x1a3a2a, emissiveIntensity:.3,
+  transparent:true, opacity:.14,
+  side:THREE.DoubleSide, roughness:.4, metalness:.6
+});
+// Vier Seitenflächen (je 2 Ecken + Spitze)
+for(let i=0;i<4;i++){
+  const g = new THREE.BufferGeometry().setFromPoints([
+    corners[i], corners[(i+1)%4], apex
+  ]);
+  g.computeVertexNormals();
+  scene.add(new THREE.Mesh(g, faceMat));
+}
+// Grundfläche
+const baseG = new THREE.BufferGeometry().setFromPoints(corners.slice().reverse());
+baseG.computeVertexNormals();
+const baseMesh = new THREE.Mesh(baseG, faceMat.clone());
+scene.add(baseMesh);
+
+/* ─── NANO-GITTER IM INNEREN (das dazwischen) ─────────────*/
+const nPos = [], nCol = [];
+for(let i=0;i<11;i++)for(let j=0;j<11;j++){
+  const t = i/10, s = j/10;
+  // Punkt auf Linie von Ecke zu Spitze
+  const ci = Math.floor(s*3.999);
+  const sLocal = (s*4) - ci;
+  const c0 = corners[ci], c1 = corners[(ci+1)%4];
+  const edgePt = c0.clone().lerp(c1, sLocal);
+  const p = edgePt.clone().lerp(apex, t);
+  // kleiner Offset reinwärts
+  p.x *= .75; p.z *= .75;
+  nPos.push(p.x, p.y, p.z);
+  nCol.push(.3+t*.5, .6+s*.3, .9-t*.4);
+}
+const nGeo = new THREE.BufferGeometry();
+nGeo.setAttribute('position', new THREE.Float32BufferAttribute(nPos,3));
+nGeo.setAttribute('color', new THREE.Float32BufferAttribute(nCol,3));
+const nano = new THREE.Points(nGeo, new THREE.PointsMaterial({
+  size:.07, vertexColors:true, transparent:true, opacity:.75,
+  blending:THREE.AdditiveBlending, depthWrite:false, sizeAttenuation:true
+}));
+scene.add(nano);
+
+/* ─── MODUS ───────────────────────────────────────────────*/
+let nutzbar = true;
+let wellen = [];
+const bN = document.getElementById('bN');
+const bU = document.getElementById('bU');
+const wortEl = document.getElementById('wort');
+
+function setModus(n){
+  nutzbar = n;
+  bN.classList.toggle('on', n);
+  bU.classList.toggle('on', !n);
+  if(n){
+    wortEl.textContent = 'eigentlich';
+    wortEl.className = 'eigentlich';
+    edgeMat.color.setHex(0x3a5a4a);
+    cornerDots.forEach(d=>{
+      d.material.color.setHex(0x44aa77);
+      d.material.emissive.setHex(0x44aa77);
+    });
+  } else {
+    wortEl.textContent = 'nur ja';
+    wortEl.className = 'nurja';
+    edgeMat.color.setHex(0x1a2a2a);
+    cornerDots.forEach(d=>{
+      d.material.color.setHex(0x2a3a2a);
+      d.material.emissive.setHex(0x2a3a2a);
+    });
+  }
+}
+bN.addEventListener('click', ()=>setModus(true));
+bU.addEventListener('click', ()=>setModus(false));
+
+/* ─── KLICK: ECKE → SPITZE IMPULS ─────────────────────────*/
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let down = null;
+
+canvas.addEventListener('pointerdown', e=>{ down={x:e.clientX,y:e.clientY}; });
+canvas.addEventListener('pointerup', e=>{
+  if(!down) return;
+  const dx=e.clientX-down.x, dy=e.clientY-down.y;
+  if(dx*dx+dy*dy > 25) return;
+
+  // im unnutzbaren modus: nichts tun ("nur ja")
+  if(!nutzbar) return;
+
+  pointer.x = (e.clientX/innerWidth)*2-1;
+  pointer.y = -(e.clientY/innerHeight)*2+1;
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(cornerDots);
+  if(hits.length){
+    const dot = hits[0].object;
+    const from = dot.position.clone();
+    // Puls von Ecke zur Spitze
+    const geo = new THREE.BufferGeometry().setFromPoints([from, apex.clone()]);
+    const mat = new THREE.LineBasicMaterial({
+      color:0xf0d080, transparent:true, opacity:1
+    });
+    const line = new THREE.Line(geo, mat);
+    scene.add(line);
+    wellen.push({line, t:0, from});
+
+    // Ecke aufleuchten
+    dot.material.emissiveIntensity = 2.5;
+
+    // Spitze antwortet
+    apexMat.emissiveIntensity = 2.5;
+  }
+});
+
+/* ─── LOOP ────────────────────────────────────────────────*/
+const clock = new THREE.Clock();
+
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  // Spitze atmet
+  apexMesh.rotation.y += .008;
+  apexMesh.rotation.x += .004;
+  const breath = 1 + Math.sin(t*1.8)*.08;
+  apexMesh.scale.setScalar(nutzbar ? breath : breath*0.85);
+
+  // Ecken pulsieren
+  cornerDots.forEach((d,i)=>{
+    const p = 1 + Math.sin(t*1.4 + i*1.7)*.12;
+    d.scale.setScalar(nutzbar ? p : 1);
+    // Glühen abbauen
+    d.material.emissiveIntensity = Math.max(.6, d.material.emissiveIntensity - .03);
+  });
+
+  // Spitze Glühen abbauen
+  const targetI = nutzbar ? 1.1 : 0.4;
+  apexMat.emissiveIntensity = Math.max(targetI, apexMat.emissiveIntensity - .04);
+
+  // Nano-Gitter: lebt nur wenn nutzbar
+  if(nutzbar){
+    const p = nGeo.attributes.position.array;
+    for(let i=0;i<p.length/3;i++){
+      p[i*3+1] += Math.sin(t*2 + i)*.0006;
+    }
+    nGeo.attributes.position.needsUpdate = true;
+    nano.material.opacity = .75 + Math.sin(t*1.5)*.15;
+  } else {
+    nano.material.opacity = Math.max(.15, nano.material.opacity - .01);
+  }
+
+  // Wellen abbauen
+  for(let i=wellen.length-1;i>=0;i--){
+    const w = wellen[i];
+    w.t += .025;
+    w.line.material.opacity = Math.max(0, 1 - w.t);
+    if(w.t > 1){ 
+      scene.remove(w.line); 
+      w.line.geometry.dispose(); 
+      w.line.material.dispose(); 
+      wellen.splice(i,1); 
+    }
+  }
+
+  controls.autoRotate = nutzbar;
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+setModus(true);
+animate();
+</script>
+</body>
+</html>
