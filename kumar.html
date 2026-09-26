@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>kumar · das spiel · das nicht spielt</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{
+    height:100%;background:#000;color:#6a6a6a;
+    font-family:'Consolas','Courier New',monospace;
+    overflow:hidden;
+  }
+
+  /* ─── DIE LEERSTELLE ──────────────────────────── */
+  #leer{
+    position:fixed;inset:0;
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    text-align:center;
+    padding:24px;
+    z-index:5;
+  }
+
+  #leer .name{
+    font-size:clamp(48px,10vw,120px);
+    font-weight:100;
+    letter-spacing:.3em;
+    color:#1e1e1e;
+    text-shadow:0 0 40px rgba(0,0,0,.9);
+    line-height:1;
+    animation:verblassen 6s ease-in-out infinite;
+  }
+  @keyframes verblassen{
+    0%,100%{ opacity:.35 }
+    50%    { opacity:.55 }
+  }
+
+  #leer .unter{
+    margin-top:32px;
+    font-size:10px;
+    letter-spacing:.5em;
+    color:#2a2a2a;
+    line-height:2.6;
+    max-width:520px;
+  }
+
+  #leer .unter b{
+    color:#3a2a2a;
+    font-weight:400;
+  }
+
+  /* ─── DAS ZURÜCK ─────────────────────────────── */
+  #zurueck{
+    position:fixed;
+    bottom:32px;left:50%;transform:translateX(-50%);
+    z-index:6;
+  }
+  #zurueck a{
+    color:#2a4a3a;
+    text-decoration:none;
+    font-size:10px;
+    letter-spacing:.4em;
+    padding:6px 14px;
+    border:1px solid #1a2a3a;
+    transition:all .5s;
+  }
+  #zurueck a:hover{
+    color:#8cf0d0;
+    border-color:#3a5a4a;
+  }
+
+  #fuss{
+    position:fixed;
+    bottom:32px;right:24px;
+    font-size:9px;letter-spacing:.3em;
+    color:#0a1212;
+    z-index:6;
+  }
+</style>
+</head>
+<body>
+
+<div id="leer">
+  <div class="name">kumar</div>
+  <div class="unter">
+    hier ist nichts zu tun<br>
+    hier ist nichts zu klicken<br>
+    hier ist nichts zu gewinnen<br>
+    <b>nur das wissen · dass es da ist</b>
+  </div>
+</div>
+
+<div id="zurueck">
+  <a href="index.html">← zurück · ins leben</a>
+</div>
+
+<div id="fuss">
+  kader · was bleibt · wenn kumar nicht bleibt
+</div>
+
+<script type="module">
+/* ──────────────────────────────────────────────────────
+   kumar.html · das spiel, das nicht spielt
+   ─────────────────────────────────────────────────────
+   Diese seite ist die leerstelle, gegen die kader steht.
+   Sie tut nichts. Sie sammelt nichts. Sie zählt nichts.
+   Sie ist nur da — als name. Damit das verderben einen
+   namen hat, aber kein zimmer.
+
+   Kein klick. Kein einsatz. Kein zufall.
+   ────────────────────────────────────────────────────── */
+
+// Es gibt hier keine interaktion.
+// Nur ein atemzug, der sagt: du bist zurück.
+// Und ein zeichen, dass kumar NICHT weitergeht.
+
+// Nach 30 sekunden verblasst auch der name.
+// Was bleibt, ist der hintergrund. Das leben.
+setTimeout(() => {
+  const n = document.querySelector('#leer .name');
+  n.style.transition = 'opacity 4s';
+  n.style.opacity = '0.15';
+}, 30000);
+
+// ← zurück ins leben
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' || e.key === 'ArrowLeft'){
+    location.href = 'index.html';
+  }
+});
+</script>
+
+</body>
+</html>
