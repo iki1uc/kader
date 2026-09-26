@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>kettenprüfer · iki1uc · kader</title>
+<style>
+  body{background:#05070e;color:#8aa8a0;font-family:'Consolas',monospace;
+       padding:24px;min-height:100vh;line-height:1.7}
+  h1{font-size:14px;font-weight:300;letter-spacing:6px;color:#8cf0d0;
+     margin-bottom:24px;border-bottom:1px solid rgba(120,220,150,.08);
+     padding-bottom:12px}
+  .sprosse{display:flex;gap:14px;align-items:baseline;
+           padding:10px 0;border-bottom:1px dashed rgba(120,220,150,.06);
+           font-size:12px}
+  .sprosse .mark{width:18px;font-size:14px}
+  .sprosse .name{width:140px;color:#a0c8b8;font-weight:bold}
+  .sprosse .info{color:#6a8a7a;flex:1;word-break:break-word}
+  .ok   .mark{color:#8cf0d0}
+  .fail .mark{color:#ff4488}
+  .fail .name{color:#ff4488}
+  .warn .mark{color:#f0d080}
+  #zahl{margin-top:32px;text-align:center;font-size:clamp(40px,9vw,88px);
+        font-weight:100;letter-spacing:.08em;color:#f0d080;
+        text-shadow:0 0 30px rgba(240,208,128,.35)}
+  #zahl small{display:block;font-size:10px;letter-spacing:8px;
+              color:#3a5a4a;margin-top:8px;font-weight:400}
+  #fazit{margin-top:24px;text-align:center;font-size:11px;
+         letter-spacing:4px;color:#3a5a4a}
+  #fazit.haelt{color:#8cf0d0;text-shadow:0 0 12px rgba(140,240,208,.3)}
+  #fazit.reisst{color:#ff4488;text-shadow:0 0 12px rgba(255,68,136,.3)}
+</style>
+</head>
+<body>
+
+<h1>KETTENPRÜFER · visitor → online → raw → respo-map → spitze → master → die eine zahl</h1>
+
+<div id="kette"></div>
+<div id="zahl"></div>
+<div id="fazit">· prüfe ·</div>
+
+<script type="module">
+const ketteEl = document.getElementById('kette');
+const zahlEl  = document.getElementById('zahl');
+const fazitEl = document.getElementById('fazit');
+const sprossen = [];
+
+function sprosse(name, status, info){
+  sprossen.push({ name, status, info });
+  const row = document.createElement('div');
+  row.className = 'sprosse ' + status;
+  const mark = status === 'ok' ? '✓' : status === 'fail' ? '✗' : '·';
+  row.innerHTML = `
+    <span class="mark">${mark}</span>
+    <span class="name">${name}</span>
+    <span class="info">${info}</span>
+  `;
+  ketteEl.appendChild(row);
+}
+
+async function pruefe(){
+  ketteEl.innerHTML = '';
+  sprossen.length = 0;
+  let online, raw, respoMap, bindung, master;
+
+  // ── 1. online ──────────────────────────────────
+  try {
+    const { ONLINE } = await import('./online.js');
+    online = await ONLINE();
+    sprosse('online', 'ok',
+      `${online.online}/${online.gesamt} module · ${online.offline} offline`);
+  } catch(e){
+    sprosse('online', 'fail', e.message);
+    fazitEl.className = 'reisst';
+    fazitEl.textContent = '· kette gerissen bei online ·';
+    return;
+  }
+
+  // ── 2. raw ─────────────────────────────────────
+  try {
+    const { RAW } = await import('./raw.js');
+    // raw.js könnte eine funktion oder ein objekt sein — beides prüfen
+    raw = typeof RAW === 'function' ? RAW(online) : RAW;
+    const anzahl = Object.keys(raw).length;
+    sprosse('raw', anzahl > 0 ? 'ok' : 'warn',
+      `${anzahl} einträge${typeof RAW === 'function' ? ' (funktion)' : ' (objekt)'}`);
+  } catch(e){
+    sprosse('raw', 'fail', e.message);
+    fazitEl.className = 'reisst';
+    fazitEl.textContent = '· kette gerissen bei raw ·';
+    return;
+  }
+
+  // ── 3. respo-map ───────────────────────────────
+  try {
+    const { RESPO_MAP } = await import('./respo-map.js');
+    respoMap = typeof RESPO_MAP === 'function' ? RESPO_MAP(online.module) : RESPO_MAP;
+    const anzahl = Object.keys(respoMap).length;
+    sprosse('respo-map', anzahl > 0 ? 'ok' : 'warn',
+      `${anzahl} pfade${typeof RESPO_MAP === 'function' ? ' (funktion)' : ' (objekt)'}`);
+  } catch(e){
+    sprosse('respo-map', 'fail', e.message);
+    fazitEl.className = 'reisst';
+    fazitEl.textContent = '· kette gerissen bei respo-map ·';
+    return;
+  }
+
+  // ── 4. spitze ──────────────────────────────────
+  try {
+    const { SPITZE } = await import('./spitze.js');
+    bindung = SPITZE.fuehrt(raw, respoMap);
+    sprosse('spitze', 'ok',
+      `beitrag ${bindung.beitrag.length} · nichtbeitrag ${bindung.nicht.length} · zahl ${bindung.zahl}`);
+  } catch(e){
+    sprosse('spitze', 'fail', e.message);
+    fazitEl.className = 'reisst';
+    fazitEl.textContent = '· kette gerissen bei spitze ·';
+    return;
+  }
+
+  // ── 5. master ──────────────────────────────────
+  try {
+    const { MASTER } = await import('./master.js');
+    master = MASTER(online);
+    sprosse('master', 'ok',
+      `${master.name} · ${master.zustand} · zeit ${master.zeit.slice(11,19)}`);
+  } catch(e){
+    sprosse('master', 'fail', e.message);
+    fazitEl.className = 'reisst';
+    fazitEl.textContent = '· kette gerissen bei master ·';
+    return;
+  }
+
+  // ── 6. die eine zahl ───────────────────────────
+  const zahl = master.DIE_EINE_ZAHL;
+  sprosse('die eine zahl', 'ok', String(zahl));
+
+  zahlEl.innerHTML = `${zahl}<small>DIE EINE ZAHL · ${bindung.bindung}</small>`;
+
+  // ── fazit ─────────────────────────────────────
+  const faelle = sprossen.filter(s => s.status === 'fail').length;
+  const warnungen = sprossen.filter(s => s.status === 'warn').length;
+
+  if(faelle === 0 && warnungen === 0){
+    fazitEl.className = 'haelt';
+    fazitEl.textContent = '· kette hält · 6 sprossen · 1 zahl ·';
+  } else if(faelle === 0){
+    fazitEl.className = 'haelt';
+    fazitEl.textContent = `· kette hält mit ${warnungen} warnung${warnungen>1?'en':''} ·`;
+  } else {
+    fazitEl.className = 'reisst';
+    fazitEl.textContent = `· kette reißt · ${faelle} sprosse${faelle>1?'n':''} ·`;
+  }
+}
+
+pruefe();
+</script>
+
+</body>
+</html>
