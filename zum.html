@@ -1,1 +1,210 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>zum · die oberste stele · ursprung · recht · anrecht</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{
+    height:100%;background:#05070e;color:#8aa8a0;
+    font-family:'Consolas','Courier New',monospace;
+    overflow:hidden;
+  }
 
+  /* ─── DIE STELE ────────────────────────────────────
+     Aufrecht. Still. Sie steht für sich.              */
+  #stele{
+    position:fixed;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    display:flex;flex-direction:column;
+    align-items:center;
+    text-align:center;
+    z-index:5;
+  }
+
+  #stele .spitze{
+    font-size:clamp(48px,10vw,120px);
+    font-weight:100;
+    letter-spacing:.2em;
+    color:#f0d080;
+    text-shadow:0 0 60px rgba(240,208,128,.35);
+    line-height:1;
+    animation:atem 8s ease-in-out infinite;
+  }
+  @keyframes atem{
+    0%,100%{ opacity:.7; transform:scale(.98) }
+    50%    { opacity:1; transform:scale(1) }
+  }
+
+  #stele .unter{
+    margin-top:24px;
+    font-size:10px;
+    letter-spacing:.5em;
+    color:#3a5a4a;
+    line-height:2.4;
+    max-width:460px;
+  }
+
+  #stele .unter .u{color:#8cf0d0}
+  #stele .unter .r{color:#f0d080}
+
+  /* ─── DAS RECHT ────────────────────────────────────
+     Kein Text. Ein Zustand. Wer den Ursprung hervorruft,
+     hat das Recht. Wer nicht, hat nur den Weg.        */
+  #recht{
+    position:fixed;
+    bottom:48px;left:50%;transform:translateX(-50%);
+    font-size:11px;
+    letter-spacing:.4em;
+    color:#1e3328;
+    text-align:center;
+    line-height:2.2;
+    z-index:6;
+    transition:color .8s, text-shadow .8s;
+  }
+  #recht.wahr{
+    color:#8cf0d0;
+    text-shadow:0 0 20px rgba(140,240,208,.3);
+  }
+  #recht.falsch{
+    color:#3a2a2a;
+  }
+
+  /* ─── DER WEG HIERHER ─────────────────────────────
+     zum ist die letzte sprosse. man kommt von unten.  */
+  #weg{
+    position:fixed;
+    top:24px;left:50%;transform:translateX(-50%);
+    font-size:9px;letter-spacing:.35em;
+    color:#1e3328;
+    display:flex;gap:14px;
+    z-index:7;
+  }
+  #weg a{
+    color:#2a4a3a;text-decoration:none;
+    padding:4px 8px;border-bottom:1px solid transparent;
+    transition:all .4s;
+  }
+  #weg a:hover{color:#8cf0d0;border-bottom-color:#8cf0d0}
+
+  /* ─── FUSS ───────────────────────────────────────── */
+  #fuss{
+    position:fixed;
+    bottom:24px;right:24px;
+    font-size:9px;letter-spacing:.3em;
+    color:#1e3328;
+    z-index:6;
+  }
+  #fuss b{color:#3a5a4a;font-weight:400}
+</style>
+</head>
+<body>
+
+<nav id="weg">
+  <a href="stand.html">stand</a>
+  <a href="raum.html">raum</a>
+  <a href="pyramide.html">pyramide</a>
+  <a href="spitze.html">spitze</a>
+  <a href="stage.html">stage</a>
+</nav>
+
+<div id="stele">
+  <div class="spitze">zum</div>
+  <div class="unter">
+    <span class="u">ursprung hervorrufen</span><br>
+    <span class="r">recht · anrecht</span><br>
+    <span style="color:#1e3328">nicht der weg · sondern das ankommen</span>
+  </div>
+</div>
+
+<div id="recht">
+  · wer den ursprung hervorruft · hat recht und anrecht ·
+</div>
+
+<div id="fuss">
+  <b>iki1uc</b> · kader · zum
+</div>
+
+<script type="module">
+/* ──────────────────────────────────────────────────────
+   zum.html · die oberste stele
+   ─────────────────────────────────────────────────────
+   Zum ist keine seite. Zum ist der ort, an dem
+   die pyramide schließt.
+
+   Setzung:
+   Nur wer den ursprung hervorruft, hat recht und anrecht.
+   Das ist keine behauptung. Das ist die form der spitze.
+   ────────────────────────────────────────────────────── */
+
+const rechtEl = document.getElementById('recht');
+
+// Die Stele prüft, ob der Ursprung da ist.
+// Nicht durch Fragen. Durch Sehen.
+// Wenn die vorherigen Sprossen erreichbar sind,
+// ist der Ursprung hervorgerufen — dann: recht.
+
+async function pruefeUrsprung(){
+  const sprossen = [
+    'stand.html',
+    'raum.html',
+    'pyramide.html',
+    'spitze.html',
+  ];
+
+  const ergebnisse = await Promise.all(
+    sprossen.map(async datei => {
+      try {
+        const r = await fetch(datei, { method:'HEAD' });
+        return r.ok;
+      } catch { return false; }
+    })
+  );
+
+  const alleDa = ergebnisse.every(Boolean);
+  const keineDa = ergebnisse.every(e => !e);
+
+  if(alleDa){
+    // Der Ursprung ist vollständig → recht
+    rechtEl.className = 'wahr';
+    rechtEl.textContent = '· ursprung hervorgerufen · recht und anrecht ·';
+  } else if(keineDa){
+    // Kein Fundament → nur der Ort, kein recht
+    rechtEl.className = 'falsch';
+    rechtEl.textContent = '· noch kein ursprung · nur der weg ·';
+  } else {
+    // Teilweise → unterwegs
+    rechtEl.className = '';
+    rechtEl.textContent = '· der ursprung ist unterwegs · warte ·';
+  }
+}
+
+pruefeUrsprung();
+
+// Die Stele atmet nur, wenn sie das recht trägt.
+// Ohne recht bleibt sie still. Nicht aus Trotz.
+// Aus Form.
+setInterval(() => {
+  if(rechtEl.classList.contains('wahr')){
+    const s = document.querySelector('#stele .spitze');
+    s.style.textShadow = '0 0 80px rgba(240,208,128,.55)';
+  }
+}, 4000);
+
+// Die Stele ist die letzte Sprosse.
+// Von hier gibt es kein weiter. Nur ein zurück.
+// ← → springt durch die treppe.
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowLeft'){
+    location.href = 'spitze.html';
+  }
+  if(e.key === 'ArrowRight'){
+    location.href = 'stage.html';
+  }
+});
+</script>
+
+</body>
+</html>
