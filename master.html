@@ -3,11 +3,16 @@
   import { ONLINE } from "./online.js";
   import { MASTER } from "./master.js";
 
-  function tick(){
-    const online = ONLINE();
-    const master = MASTER(online);
-    document.getElementById("master").textContent =
-      JSON.stringify(master, null, 2);
+  async function tick(){
+    try {
+      const online = await ONLINE();      // ← warten
+      const master = MASTER(online);       // ← jetzt ist online ein echtes Objekt
+      document.getElementById("master").textContent =
+        JSON.stringify(master, null, 2);
+    } catch(e){
+      document.getElementById("master").textContent =
+        "KETTE GERISSEN · " + e.message;
+    }
   }
 
   tick();
